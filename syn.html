@@ -1,0 +1,2586 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Syn Debate</title>
+    <style>
+        html,
+        body {
+            margin: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background: #ffffff;
+            font-family: Arial, sans-serif;
+        }
+
+        #graph {
+            width: 100%;
+            height: 100%;
+            display: block;
+            touch-action: none;
+            cursor: grab;
+        }
+
+        #status {
+            position: fixed;
+            top: 196px;
+            left: 16px;
+            z-index: 5;
+            max-width: min(640px, calc(100vw - 32px));
+            padding: 10px 12px;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.95);
+            border: 1px solid #e2e8f0;
+            color: #334155;
+            font-size: 15px;
+            line-height: 1.4;
+            box-shadow: 0 6px 20px rgba(15, 23, 42, 0.08);
+            white-space: pre-line;
+        }
+
+        #nodePopup {
+            position: fixed;
+            display: none;
+            z-index: 1000;
+            background: rgba(255, 255, 255, 0.98);
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            padding: 16px;
+            max-width: 400px;
+            max-height: 300px;
+            overflow-y: auto;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            font-size: 14px;
+            line-height: 1.6;
+            color: #1e293b;
+        }
+
+        #nodePopup.visible {
+            display: block;
+        }
+
+        #nodePopup .popup-close {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            width: 24px;
+            height: 24px;
+            background: none;
+            border: none;
+            font-size: 20px;
+            cursor: pointer;
+            color: #64748b;
+        }
+
+        #nodePopup .popup-close:hover {
+            color: #1e293b;
+        }
+
+        #textButton {
+            position: fixed;
+            top: 16px;
+            right: 16px;
+            padding: 14px 18px;
+            min-height: 50px;
+            border: none;
+            border-radius: 8px;
+            z-index: 900;
+            background: #0f172a;
+            color: #ffffff;
+            font-size: 17px;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 8px 24px rgba(15, 23, 42, 0.28);
+            line-height: 1.2;
+            white-space: nowrap;
+        }
+
+        #textButton:hover {
+            background: #1e293b;
+        }
+
+        #textSidebarOverlay {
+            position: fixed;
+            inset: 0;
+            z-index: 1400;
+            display: none;
+            background: rgba(15, 23, 42, 0.35);
+        }
+
+        #textSidebarOverlay.visible {
+            display: block;
+        }
+
+        #textSidebar {
+            position: fixed;
+            top: 0;
+            right: 0;
+            height: 100%;
+            width: min(480px, 100vw);
+            background: #ffffff;
+            box-shadow: -16px 0 40px rgba(15, 23, 42, 0.22);
+            display: flex;
+            flex-direction: column;
+            transition: width 0.25s ease;
+        }
+
+        #textSidebar.fullscreen {
+            width: 100vw;
+        }
+
+        #textSidebarHeader {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            padding: 14px 16px;
+            border-bottom: 1px solid #e2e8f0;
+            flex-shrink: 0;
+        }
+
+        #textSidebarHeader h2 {
+            margin: 0;
+            font-size: 13px;
+            font-weight: 700;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+            color: #94a3b8;
+        }
+
+        #textSidebarHeader .textSidebarActions {
+            display: flex;
+            gap: 6px;
+        }
+
+        #textSidebarHeader button {
+            width: 32px;
+            height: 32px;
+            border: 1px solid #e2e8f0;
+            border-radius: 999px;
+            background: #f8fafc;
+            color: #475569;
+            cursor: pointer;
+            font-size: 16px;
+            line-height: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #textSidebarHeader button:hover {
+            background: #eef2f7;
+            color: #1e293b;
+        }
+
+        #textSidebarBody {
+            flex: 1 1 auto;
+            overflow-y: auto;
+            padding: 20px 22px;
+            font-family: Georgia, 'Times New Roman', serif;
+            font-size: 15px;
+            line-height: 1.85;
+            color: #334155;
+            white-space: pre-wrap;
+        }
+
+        #textSidebarBody .speaker {
+            font-weight: 700;
+            color: #0f172a;
+            font-family: Arial, sans-serif;
+        }
+
+        #textSidebarBody .ac-span {
+            background: #fee2e2;
+            color: #7f1d1d;
+            text-decoration: underline;
+            text-decoration-color: #ef4444;
+            text-decoration-thickness: 2px;
+            text-underline-offset: 2px;
+            border-radius: 2px;
+            padding: 0 1px;
+            box-decoration-break: clone;
+            -webkit-box-decoration-break: clone;
+            cursor: pointer;
+            transition: all 0.1s;
+        }
+
+        #textSidebarBody .ac-span:hover {
+            background: #fecaca;
+        }
+
+        #textSidebarBody .ac-tag {
+            font-family: Menlo, Consolas, monospace;
+            font-size: 13px;
+            font-weight: 700;
+            color: #dc2626;
+            vertical-align: baseline;
+            margin: 0 4px;
+            user-select: none;
+        }
+
+        #textSidebarBody .entity-span {
+            background: #dbeafe;
+            color: #1e3a8a;
+            font-weight: 500;
+            text-decoration: underline;
+            text-decoration-color: #3b82f6;
+            text-decoration-thickness: 2px;
+            text-underline-offset: 2px;
+            border-radius: 2px;
+            padding: 0 1px;
+            box-decoration-break: clone;
+            -webkit-box-decoration-break: clone;
+            cursor: pointer;
+            transition: all 0.1s;
+        }
+
+        #textSidebarBody .entity-span:hover {
+            background: #bfdbfe;
+        }
+
+        #textSidebarBody .feature-span {
+            background: #fef9c3;
+            color: #713f12;
+            font-weight: 500;
+            text-decoration: underline;
+            text-decoration-color: #eab308;
+            text-decoration-thickness: 2px;
+            text-underline-offset: 2px;
+            border-radius: 2px;
+            padding: 0 1px;
+            box-decoration-break: clone;
+            -webkit-box-decoration-break: clone;
+            cursor: pointer;
+            transition: all 0.1s;
+        }
+
+        #textSidebarBody .feature-span:hover {
+            background: #fef08a;
+        }
+
+        #helpPopupOverlay {
+            position: fixed;
+            inset: 0;
+            z-index: 1050;
+            display: none;
+            background: rgba(15, 23, 42, 0.35);
+        }
+
+        #helpPopupOverlay.visible {
+            display: block;
+        }
+
+        #helpPopup {
+            position: absolute;
+            top: 72px;
+            left: 16px;
+            width: min(760px, calc(100vw - 32px));
+            max-height: calc(100vh - 88px);
+            overflow: auto;
+            background: rgba(255, 255, 255, 0.99);
+            border: 1px solid #cbd5e1;
+            border-radius: 12px;
+            padding: 18px 18px 16px 18px;
+            color: #1e293b;
+            box-shadow: 0 16px 40px rgba(15, 23, 42, 0.22);
+            font-size: 14px;
+            line-height: 1.45;
+        }
+
+        #helpPopup .popup-close {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            width: 24px;
+            height: 24px;
+            background: none;
+            border: none;
+            font-size: 20px;
+            cursor: pointer;
+            color: #64748b;
+        }
+
+        #helpPopup .popup-close:hover {
+            color: #1e293b;
+        }
+
+        #helpPopup h2 {
+            margin: 0 28px 8px 0;
+            font-size: 18px;
+            line-height: 1.2;
+        }
+
+        #helpPopup h3 {
+            margin: 14px 0 6px 0;
+            font-size: 14px;
+        }
+
+        #helpPopup p {
+            margin: 0 0 8px 0;
+        }
+
+        #helpPopup ul {
+            margin: 0 0 8px 18px;
+            padding: 0;
+        }
+
+        #helpPopup code {
+            background: #f1f5f9;
+            border: 1px solid #e2e8f0;
+            border-radius: 4px;
+            padding: 1px 4px;
+            font-family: Menlo, Consolas, monospace;
+            font-size: 12px;
+            color: #0f172a;
+        }
+
+        #helpPopup table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 4px 0 8px 0;
+            font-size: 13px;
+        }
+
+        #helpPopup th,
+        #helpPopup td {
+            border: 1px solid #e2e8f0;
+            padding: 6px 8px;
+            text-align: left;
+            vertical-align: top;
+        }
+
+        #helpPopup th {
+            background: #f8fafc;
+            font-weight: 700;
+        }
+
+        #goBackButton {
+            position: fixed;
+            top: 16px;
+            left: 16px;
+            padding: 14px 16px;
+            min-height: 50px;
+            border: none;
+            border-radius: 8px;
+            z-index: 1100;
+            background: #0f172a;
+            color: #ffffff;
+            font-size: 17px;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 8px 24px rgba(15, 23, 42, 0.28);
+            line-height: 1.2;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #goBackButton:hover {
+            background: #1e293b;
+        }
+
+        #helpMenuButton {
+            position: fixed;
+            top: 16px;
+            left: 76px;
+            padding: 14px 18px;
+            min-height: 50px;
+            border: none;
+            border-radius: 8px;
+            z-index: 1100;
+            background: #0f172a;
+            color: #ffffff;
+            font-size: 17px;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 8px 24px rgba(15, 23, 42, 0.28);
+            line-height: 1.2;
+            white-space: nowrap;
+        }
+
+        #helpMenuButton:hover {
+            background: #1e293b;
+        }
+    </style>
+</head>
+
+<body>
+
+    <button id="goBackButton" type="button" aria-label="Back to examples" title="Back">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle;">
+            <path d="M19 12H5M12 19l-7-7 7-7" />
+        </svg>
+    </button>
+
+    <button id="helpMenuButton" type="button" aria-label="Open info and querying help" title="Info &amp; Querying">Info
+        &amp; Querying</button>
+
+    <button id="textButton" type="button" aria-label="Open segmented text" title="Open segmented text">Text</button>
+
+
+    <div id="textSidebarOverlay" aria-hidden="true">
+        <div id="textSidebar" role="dialog" aria-modal="true" aria-labelledby="textSidebarTitle">
+            <div id="textSidebarHeader">
+                <h2 id="textSidebarTitle">Segmented text</h2>
+                <div class="textSidebarActions">
+                    <button id="textSidebarExpandBtn" type="button" title="Expand to full screen">⤢</button>
+                    <button id="textSidebarCloseBtn" type="button" title="Close">×</button>
+                </div>
+            </div>
+            <div id="textSidebarBody"></div>
+        </div>
+    </div>
+
+    <div id="helpPopupOverlay" aria-hidden="true">
+        <div id="helpPopup" role="dialog" aria-modal="true" aria-labelledby="helpTitle">
+            <button class="popup-close" id="helpPopupClose" aria-label="Close help">×</button>
+            <h2 id="helpTitle">Helper</h2>
+            <p>This visualization supports standard interactions, including panning, zooming, node manipulation, as well
+                as filtering through URL query filters. Multiple filters can be combined.</p>
+
+            <h3>Basic interactions</h3>
+            <ul>
+                <li>Drag empty space to pan the graph.</li>
+                <li>Scrolling (using mouse wheel or trackpad) controls zoom level.</li>
+                <li>Nodes can be repositioned via drag-and-drop.</li>
+                <li>Double-click (or double-tap) a node to open its associated text.</li>
+            </ul>
+
+            <h3>Query parameters</h3>
+            <p>The interface support the following query parameters:</p>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Query</th>
+                        <th>What it does</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>showClasses=1|0</code></td>
+                        <td>Show or hide CLASS nodes and related links. Default: <code>1</code>.</td>
+                    </tr>
+                    <tr>
+                        <td><code>showTextOf=1|0</code></td>
+                        <td>Show or hide TEXTOF nodes. Default: <code>0</code>.</td>
+                    </tr>
+                    <tr>
+                        <td><code>AG=1|0</code> (or <code>ag</code>)</td>
+                        <td>Argument-only graph mode (only ARGUMENT↔ARGUMENT links). Default: <code>0</code>.</td>
+                    </tr>
+                    <tr>
+                        <td><code>debaters=...</code></td>
+                        <td>Filter by debater(s). Supports aliases (e.g. John, Arthur), comma lists, JSON arrays, or
+                            repeated
+                            params.</td>
+                    </tr>
+                    <tr>
+                        <td><code>ac=...</code> (or <code>AC</code>)</td>
+                        <td>Filter by argument index/range (display index). Examples: <code>ac=5</code>,
+                            <code>ac=5-12</code>,
+                            <code>ac=1,3,7-9</code>.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><code>acceptance=...</code></td>
+                        <td>Filter by reasoning score. <code>acceptance=0.5</code> means score ≥ 0.50;
+                            <code>acceptance=0.50-0.60</code> means inclusive range.
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h3>Examples</h3>
+            <p><code>?acceptance=0.5</code></p>
+            <p><code>?acceptance=0.50-0.60&amp;AG=1</code></p>
+            <p><code>?debaters=John&amp;ac=1-12&amp;showTextOf=1</code></p>
+            <p><code>?debaters=["John","Arthur"]&amp;ac=5,8-10&amp;acceptance=0.45-0.80</code></p>
+        </div>
+    </div>
+
+    <div id="nodePopup">
+        <button class="popup-close"
+            onclick="document.getElementById('nodePopup').classList.remove('visible')">×</button>
+        <div id="popupContent"></div>
+    </div>
+
+    <svg id="graph" aria-label="graph" role="img">
+        <defs>
+            <marker id="arrowhead" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto">
+                <path d="M1,1 L1,5 L7,3 z" fill="#94a3b8" stroke="#94a3b8" stroke-width="2" stroke-linejoin="round"
+                    stroke-linecap="round"></path>
+            </marker>
+            <marker id="arrowhead-attack" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto">
+                <path d="M1,1 L1,5 L7,3 z" fill="#ef4444" stroke="#ef4444" stroke-width="2" stroke-linejoin="round"
+                    stroke-linecap="round"></path>
+            </marker>
+            <marker id="arrowhead-support" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto">
+                <path d="M1,1 L1,5 L7,3 z" fill="#10b981" stroke="#10b981" stroke-width="2" stroke-linejoin="round"
+                    stroke-linecap="round"></path>
+            </marker>
+            <marker id="arrowhead-entity-feature" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto">
+                <path d="M1,1 L1,5 L7,3 z" fill="#3b82f6" stroke="#3b82f6" stroke-width="2" stroke-linejoin="round"
+                    stroke-linecap="round"></path>
+            </marker>
+            <marker id="arrowhead-ac-entity" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto">
+                <path d="M1,1 L1,5 L7,3 z" fill="#1e3a8a" stroke="#1e3a8a" stroke-width="2" stroke-linejoin="round"
+                    stroke-linecap="round"></path>
+            </marker>
+            <marker id="arrowhead-component" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto">
+                <path d="M1,1 L1,5 L7,3 z" fill="#a855f7" stroke="#a855f7" stroke-width="2" stroke-linejoin="round"
+                    stroke-linecap="round"></path>
+            </marker>
+            <marker id="arrowhead-class" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto">
+                <path d="M1,1 L1,5 L7,3 z" fill="#f97316" stroke="#f97316" stroke-width="2" stroke-linejoin="round"
+                    stroke-linecap="round"></path>
+            </marker>
+        </defs>
+        <g id="camera">
+            <g id="edge-layer"></g>
+            <g id="node-layer"></g>
+        </g>
+    </svg>
+    <div id="status">Loading Graph...</div>
+
+    <script>
+        const EMBEDDED_REAL_DEBATE = {
+            argument_components: {
+                "AC0": "introducing a carbon tax reduces CO2 emissions",
+                "AC1": "we cannot ignore the immediate economic reality for the people of Birmingham and beyond",
+                "AC2": "a carbon tax increases costs for households and firms",
+                "AC3": "at a time when inflation is high, adding this financial burden motivates our rejection of the proposed climate measures.",
+                "AC4": "this isn't money lost; it is money repurposed for our future",
+                "AC5": "We have clearly stated that revenues from a carbon tax can be invested in renewable energy",
+                "AC6": "This creates a cycle where the tax funds the very solution that will lower energy costs in the long run"
+            },
+            strength: {
+                "AC0": [
+                    0.703628189628645,
+                    0.952
+                ],
+                "AC1": [
+                    0.4038059972040104,
+                    0.396
+                ],
+                "AC2": [
+                    0.9218681369656054,
+                    0.131
+                ],
+                "AC3": [
+                    0.6177338375057747,
+                    0.283
+                ],
+                "AC4": [
+                    0.7709090666473534,
+                    0.949
+                ],
+                "AC5": [
+                    1,
+                    1
+                ],
+                "AC6": [
+                    1,
+                    1
+                ]
+            },
+            argument_relations: [
+                [
+                    "AC1",
+                    "ATTACK=0.5899938417670993",
+                    "AC0"
+                ],
+                [
+                    "AC2",
+                    "ATTACK=0.9584269925358996",
+                    "AC0"
+                ],
+                [
+                    "AC2",
+                    "SUPPORT=0.4523942515207436",
+                    "AC1"
+                ],
+                [
+                    "AC3",
+                    "ATTACK=0.9093311231083119",
+                    "AC0"
+                ],
+                [
+                    "AC3",
+                    "SUPPORT=0.9391274520915858",
+                    "AC1"
+                ],
+                [
+                    "AC3",
+                    "SUPPORT=0.05593320826086079",
+                    "AC2"
+                ],
+                [
+                    "AC4",
+                    "SUPPORT=0.9775317406959697",
+                    "AC0"
+                ],
+                [
+                    "AC4",
+                    "ATTACK=0.49272604596496156",
+                    "AC1"
+                ],
+                [
+                    "AC4",
+                    "ATTACK=0.907597047248403",
+                    "AC2"
+                ],
+                [
+                    "AC4",
+                    "ATTACK=0.7803550560182824",
+                    "AC3"
+                ],
+                [
+                    "AC5",
+                    "SUPPORT=0.9820768246011474",
+                    "AC0"
+                ],
+                [
+                    "AC5",
+                    "ATTACK=0.774937745459911",
+                    "AC2"
+                ],
+                [
+                    "AC5",
+                    "SUPPORT=0.9471354932565836",
+                    "AC4"
+                ],
+                [
+                    "AC6",
+                    "SUPPORT=0.9727296614168334",
+                    "AC0"
+                ],
+                [
+                    "AC6",
+                    "ATTACK=0.8364191647033687",
+                    "AC2"
+                ],
+                [
+                    "AC6",
+                    "ATTACK=0.3452388682966594",
+                    "AC3"
+                ],
+                [
+                    "AC6",
+                    "SUPPORT=0.9324400197548552",
+                    "AC4"
+                ],
+                [
+                    "AC6",
+                    "SUPPORT=0.9554566031347691",
+                    "AC5"
+                ]
+            ],
+            knowledge_base: [
+                [
+                    "John",
+                    "age",
+                    "58"
+                ],
+                [
+                    "John",
+                    "memberOf",
+                    "Green"
+                ],
+                [
+                    "John",
+                    "expertise",
+                    "climate policy"
+                ],
+                [
+                    "Arthur",
+                    "age",
+                    "62"
+                ],
+                [
+                    "Arthur",
+                    "memberOf",
+                    "Conservative"
+                ],
+                [
+                    "Arthur",
+                    "expertise",
+                    "economic policy and business competitiveness"
+                ]
+            ],
+            authorship: [
+                [
+                    "AC0",
+                    "author",
+                    "John"
+                ],
+                [
+                    "AC1",
+                    "author",
+                    "Arthur"
+                ],
+                [
+                    "AC2",
+                    "author",
+                    "Arthur"
+                ],
+                [
+                    "AC3",
+                    "author",
+                    "Arthur"
+                ],
+                [
+                    "AC4",
+                    "author",
+                    "John"
+                ],
+                [
+                    "AC5",
+                    "author",
+                    "John"
+                ],
+                [
+                    "AC6",
+                    "author",
+                    "John"
+                ]
+            ],
+            entities: [
+                "John",
+                "Arthur"
+            ],
+            concepts: [
+                [
+                    "John",
+                    "Politician"
+                ],
+                [
+                    "Green",
+                    "Party"
+                ],
+                [
+                    "Brighton",
+                    "Location"
+                ],
+                [
+                    "Arthur",
+                    "Politician"
+                ],
+                [
+                    "Conservative",
+                    "Party"
+                ],
+                [
+                    "Birmingham",
+                    "Location"
+                ]
+            ]
+        };
+
+        const SEGMENTED_TEXT = "Moderator: \"Tonight's debate brings together two experienced voices on climate and economic policy. John, the representative of the Green party, is 58 years old and lives in Brighton. With a strong background in climate policy and years of green advocacy, he speaks calmly but firmly, convinced that carbon taxation is one of the most effective tools to reduce emissions and accelerate the transition to renewable energy. Opposing him is Arthur, the representative of the Conservative party, 62 years old and based in Birmingham. With expertise in economic policy and business competitiveness, he approaches climate measures with caution. He is deeply concerned about the immediate financial burden on households and firms, arguing that taxation risks harming ordinary citizens before any long-term benefits can be felt.\" John: \"Thank you. We need to look at the reality of our climate situation with clarity. Our party has endorsed a specific mechanism because the data is undeniable. Quite simply, <AC0> introducing a carbon tax reduces CO2 emissions </AC0> . This is not just a theory; it is a central element of our climate agenda to discourage pollution at the source.\" Arthur: \"I understand your intent, John, but <AC1> we cannot ignore the immediate economic reality for the people of Birmingham and beyond </AC1> ; we express strong opposition to this measure because, fundamentally, <AC2> a carbon tax increases costs for households and firms </AC2> ; <AC3> at a time when inflation is high, adding this financial burden motivates our rejection of the proposed climate measures. </AC3> \" John: \"I understand the economic concern, Arthur, but <AC4> this isn't money lost; it is money repurposed for our future </AC4> . <AC5> We have clearly stated that revenues from a carbon tax can be invested in renewable energy </AC5> . <AC6> This creates a cycle where the tax funds the very solution that will lower energy costs in the long run </AC6> .\" Arthur: \"That is a long-term hope, John, but my constituents have bills to pay today. We need to be very careful about damaging our competitiveness now for a promise of investment later.\"";
+
+        function showNodePopup(nodeId, fullText, event) {
+            const popup = document.getElementById('nodePopup');
+            const content = document.getElementById('popupContent');
+            content.textContent = fullText;
+            popup.classList.add('visible');
+
+            const x = Math.min(event.clientX, window.innerWidth - 420);
+            const y = Math.min(event.clientY, window.innerHeight - 320);
+            popup.style.left = x + 'px';
+            popup.style.top = y + 'px';
+        }
+
+        function closeNodePopup() {
+            document.getElementById('nodePopup').classList.remove('visible');
+        }
+
+        function escapeHtml(str) {
+            return str
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;");
+        }
+
+        function renderSegmentedText(raw) {
+            const parts = raw.split(/(<AC\d+>[\s\S]*?<\/AC\d+>)/g);
+            let html = "";
+
+            const allTerms = [];
+            const data = typeof EMBEDDED_REAL_DEBATE !== 'undefined' ? EMBEDDED_REAL_DEBATE : null;
+            if (data) {
+                const entities = data.entities || [];
+                const concepts = data.concepts ? data.concepts.map(function (c) { return c[0]; }) : [];
+                const kb = data.knowledge_base || [];
+
+                entities.forEach(function (e) {
+                    if (!allTerms.some(function (t) { return t.text === e; })) {
+                        allTerms.push({ text: e, type: 'entity' });
+                    }
+                });
+
+                concepts.forEach(function (c) {
+                    if (c && !allTerms.some(function (t) { return t.text === c; })) {
+                        allTerms.push({ text: c, type: 'feature' });
+                    }
+                });
+
+                kb.forEach(function (item) {
+                    if (item.length >= 3) {
+                        const subj = item[0], obj = item[2];
+                        if (subj && !allTerms.some(function (t) { return t.text === subj; })) {
+                            allTerms.push({ text: subj, type: 'feature' });
+                        }
+                        if (obj && !allTerms.some(function (t) { return t.text === obj; })) {
+                            allTerms.push({ text: obj, type: 'feature' });
+                        }
+                    }
+                });
+            }
+
+            allTerms.sort(function (a, b) { return b.text.length - a.text.length; });
+
+            function highlightTerms(text) {
+                if (allTerms.length === 0) return escapeHtml(text);
+                const escapedTerms = allTerms.map(function (t) { return t.text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"); });
+                const regex = new RegExp('\\b(' + escapedTerms.join('|') + ')\\b', 'g');
+
+                let lastIndex = 0;
+                let result = "";
+                let match;
+
+                while ((match = regex.exec(text)) !== null) {
+                    const matchedText = match[0];
+                    const termDef = allTerms.find(function (t) { return t.text === matchedText; });
+                    const className = termDef && termDef.type === 'entity' ? 'entity-span' : 'feature-span';
+
+                    result += escapeHtml(text.substring(lastIndex, match.index));
+                    result += '<span class="' + className + '">' + escapeHtml(matchedText) + '</span>';
+                    lastIndex = regex.lastIndex;
+                }
+                result += escapeHtml(text.substring(lastIndex));
+                return result;
+            }
+
+            parts.forEach(function (part) {
+                const match = part.match(/^<AC(\d+)>([\s\S]*?)<\/AC\1>$/);
+                if (match) {
+                    const originalNum = parseInt(match[1], 10);
+                    const displayNum = originalNum + 1;
+                    const inner = escapeHtml(match[2]);
+                    html += '<span class="ac-span"><span class="ac-tag">&lt;a' + displayNum + '&gt;</span>' + inner + '<span class="ac-tag">&lt;/a' + displayNum + '&gt;</span></span>';
+                } else {
+                    const speakerMatch = part.match(/^(?:\s*)(John|Arthur):(\s*)/);
+                    if (speakerMatch) {
+                        const speakerStr = speakerMatch[1];
+                        const spaces = speakerMatch[2];
+                        const remainder = part.substring(speakerMatch[0].length);
+                        html += '<span class="speaker">' + escapeHtml(speakerStr) + ':</span>' + spaces + highlightTerms(remainder);
+                    } else {
+                        html += highlightTerms(part);
+                    }
+                }
+            });
+            return html;
+        }
+
+        function openTextSidebar() {
+            const overlay = document.getElementById("textSidebarOverlay");
+            const body = document.getElementById("textSidebarBody");
+            if (!overlay || !body) return;
+            if (!body.dataset.rendered) {
+                body.innerHTML = renderSegmentedText(SEGMENTED_TEXT);
+                body.dataset.rendered = "1";
+            }
+            overlay.classList.add("visible");
+            overlay.setAttribute("aria-hidden", "false");
+        }
+
+        function closeTextSidebar() {
+            const overlay = document.getElementById("textSidebarOverlay");
+            const sidebar = document.getElementById("textSidebar");
+            if (!overlay) return;
+            overlay.classList.remove("visible");
+            overlay.setAttribute("aria-hidden", "true");
+            if (sidebar) sidebar.classList.remove("fullscreen");
+        }
+
+        function toggleTextSidebarFullscreen() {
+            const sidebar = document.getElementById("textSidebar");
+            const expandBtn = document.getElementById("textSidebarExpandBtn");
+            if (!sidebar) return;
+            const isFull = sidebar.classList.toggle("fullscreen");
+            if (expandBtn) {
+                expandBtn.textContent = isFull ? "⤡" : "⤢";
+                expandBtn.title = isFull ? "Restore panel size" : "Expand to full screen";
+            }
+        }
+
+        (function () {
+            const goBackButton = document.getElementById("goBackButton");
+            if (goBackButton) {
+                goBackButton.addEventListener("click", function () {
+                    window.location.href = "index.html";
+
+                });
+            }
+
+            const textButton = document.getElementById("textButton");
+            if (textButton) {
+                textButton.addEventListener("click", openTextSidebar);
+            }
+
+            const textSidebarCloseBtn = document.getElementById("textSidebarCloseBtn");
+            if (textSidebarCloseBtn) {
+                textSidebarCloseBtn.addEventListener("click", closeTextSidebar);
+            }
+
+            const textSidebarExpandBtn = document.getElementById("textSidebarExpandBtn");
+            if (textSidebarExpandBtn) {
+                textSidebarExpandBtn.addEventListener("click", toggleTextSidebarFullscreen);
+            }
+
+            const textSidebarOverlay = document.getElementById("textSidebarOverlay");
+            if (textSidebarOverlay) {
+                textSidebarOverlay.addEventListener("click", function (event) {
+                    if (event.target === textSidebarOverlay) closeTextSidebar();
+                });
+            }
+        })();
+
+        function openHelpPopup() {
+            const overlay = document.getElementById('helpPopupOverlay');
+            if (!overlay) return;
+            overlay.classList.add('visible');
+            overlay.setAttribute('aria-hidden', 'false');
+        }
+
+        function closeHelpPopup() {
+            const overlay = document.getElementById('helpPopupOverlay');
+            if (!overlay) return;
+            overlay.classList.remove('visible');
+            overlay.setAttribute('aria-hidden', 'true');
+        }
+
+        function toggleHelpPopup() {
+            const overlay = document.getElementById('helpPopupOverlay');
+            if (!overlay) return;
+            if (overlay.classList.contains('visible')) {
+                closeHelpPopup();
+            } else {
+                openHelpPopup();
+            }
+        }
+
+        (function () {
+            const helpMenuButton = document.getElementById("helpMenuButton");
+            const helpPopupOverlay = document.getElementById("helpPopupOverlay");
+            const helpPopup = document.getElementById("helpPopup");
+            const helpPopupClose = document.getElementById("helpPopupClose");
+
+            if (helpMenuButton) {
+                helpMenuButton.addEventListener("click", function (event) {
+                    event.stopPropagation();
+                    toggleHelpPopup();
+                });
+            }
+            if (helpPopupClose) {
+                helpPopupClose.addEventListener("click", function (event) {
+                    event.stopPropagation();
+                    closeHelpPopup();
+                });
+            }
+            if (helpPopupOverlay) {
+                helpPopupOverlay.addEventListener("click", function () {
+                    closeHelpPopup();
+                });
+            }
+            if (helpPopup) {
+                helpPopup.addEventListener("click", function (event) {
+                    event.stopPropagation();
+                });
+            }
+            document.addEventListener("keydown", function (event) {
+                if (event.key === "Escape") closeHelpPopup();
+            });
+
+            const NS = "http://www.w3.org/2000/svg";
+            const DEFAULT_NODE_RADIUS = 30;
+            const ARROW_LENGTH = 5;
+            const BIDIRECTIONAL_CURVE_OFFSET = 40;
+
+            const NODE_COLORS = {
+                ENTITY: { fill: "#eff6ff", stroke: "#3b82f6", text: "#1e3a8a" },
+                ARGUMENT: { fill: "#fef2f2", stroke: "#ef4444", text: "#7f1d1d" },
+                FEATURE: { fill: "#eff6ff", stroke: "#3b82f6", text: "#1e3a8a" },
+                COMPONENT: { fill: "#faf5ff", stroke: "#a855f7", text: "#581c87" },
+                CLASS: { fill: "#fff7ed", stroke: "#f97316", text: "#9a3412" }
+            };
+
+            const DEFAULT_NODE_COLOR = { fill: "#ffffff", stroke: "#94a3b8", text: "#475569" };
+
+            const EDGE_STYLES = {
+                ATTACK: { stroke: "#fca5a5", marker: "url(#arrowhead-attack)", textColor: "#dc2626", labelFill: "#fef2f2" },
+                SUPPORT: { stroke: "#86efac", marker: "url(#arrowhead-support)", textColor: "#059669", labelFill: "#f0fdf4" },
+                ENTITY_FEATURE: { stroke: "#3b82f6", marker: "url(#arrowhead-entity-feature)", textColor: "#2563eb", labelFill: "#ffffff" },
+                AC_ENTITY: { stroke: "#1e3a8a", marker: "url(#arrowhead-ac-entity)", textColor: "#1e3a8a", labelFill: "#ffffff" },
+                COMPONENT: { stroke: "#a855f7", marker: "url(#arrowhead-component)", textColor: "#7e22ce", labelFill: "#ffffff" },
+                CLASS: { stroke: "#f97316", marker: "url(#arrowhead-class)", textColor: "#9a3412", labelFill: "#ffffff" },
+                DEFAULT: { stroke: "#cbd5e1", marker: "url(#arrowhead)", textColor: "#64748b", labelFill: "#ffffff" }
+            };
+
+            const SIMULATION = {
+                RADIAL_TARGETS: { ARGUMENT: 100, COMPONENT: 200, ENTITY: 700, CLASS: 500, FEATURE: 550 },
+                RADIAL_STRENGTH: { ARGUMENT: 0.08, COMPONENT: 0.03, ENTITY: 0.06, CLASS: 0.04, FEATURE: 0.04 },
+                REPULSION_BASE: 6000,
+                REPULSION_ARGUMENT: 10000,
+                REPULSION_COMPONENT: 8000,
+                REPULSION_CLASS: 9000,
+                DEFAULT_RADIAL_STRENGTH: 0.05,
+                LINK_LENGTH_DEFAULT: 200,
+                LINK_LENGTH_ARG_COMPONENT: 80,
+                LINK_LENGTH_CLASS: 120,
+                LINK_SPRING_CONSTANT: 0.02,
+                VELOCITY_DAMPING: 0.5,
+                COOLING_RATE: 0.99
+            };
+
+            const TYPE_LAYOUT_PHASE = {
+                ARGUMENT: 0,
+                COMPONENT: Math.PI * 0.45,
+                ENTITY: Math.PI * 0.9,
+                CLASS: Math.PI * 1.35,
+                FEATURE: Math.PI * 1.8
+            };
+            const GOLDEN_ANGLE = Math.PI * (3 - Math.sqrt(5));
+            const TYPE_LAYOUT_BAND = {
+                ARGUMENT: { baseRadius: 180, spacing: 78, stretchX: 1.02, stretchY: 0.98 },
+                COMPONENT: { baseRadius: 380, spacing: 86, stretchX: 1.12, stretchY: 0.88 },
+                CLASS: { baseRadius: 620, spacing: 94, stretchX: 1.16, stretchY: 0.86 },
+                FEATURE: { baseRadius: 780, spacing: 96, stretchX: 1.22, stretchY: 0.84 },
+                ENTITY: { baseRadius: 1040, spacing: 130, stretchX: 1.35, stretchY: 0.78 }
+            };
+
+            function parseQueryBoolean(rawValue, defaultValue) {
+                if (rawValue === null || rawValue === undefined) return defaultValue;
+                const normalized = String(rawValue).trim().toLowerCase();
+                if (normalized === "1" || normalized === "true") return true;
+                if (normalized === "0" || normalized === "false") return false;
+                return defaultValue;
+            }
+
+            const DEBATER_ALIAS_MAP = {
+                wallace: "Chris Wallace",
+                chriswallace: "Chris Wallace",
+                biden: "Joe Biden",
+                joebiden: "Joe Biden",
+                trump: "Donald J. Trump",
+                donaldtrump: "Donald J. Trump",
+                donaldjtrump: "Donald J. Trump"
+            };
+
+            function cleanDebaterToken(rawValue) {
+                return String(rawValue || "").trim().replace(/^['"]+|['"]+$/g, "");
+            }
+
+            function normalizeNameKey(value) {
+                return String(value || "").toLowerCase().replace(/[^a-z0-9]+/g, "");
+            }
+
+            function canonicalizeDebaterName(rawName) {
+                let cleaned = cleanDebaterToken(rawName);
+                try {
+                    cleaned = decodeURIComponent(cleaned);
+                } catch (error) {
+                }
+                if (!cleaned) return "";
+                const aliasKey = normalizeNameKey(cleaned);
+                return DEBATER_ALIAS_MAP[aliasKey] || cleaned;
+            }
+
+            function parseDebatersParam(rawValue) {
+                if (rawValue === null || rawValue === undefined) return [];
+                const raw = String(rawValue).trim();
+                if (!raw) return [];
+
+                let values = null;
+                const parseCandidates = [raw, raw.replace(/'/g, "\"")];
+                for (let i = 0; i < parseCandidates.length; i += 1) {
+                    try {
+                        const parsed = JSON.parse(parseCandidates[i]);
+                        if (Array.isArray(parsed)) {
+                            values = parsed;
+                            break;
+                        }
+                        if (typeof parsed === "string") {
+                            values = [parsed];
+                            break;
+                        }
+                    } catch (error) {
+                    }
+                }
+
+                if (!values) {
+                    let text = raw;
+                    if (text.startsWith("[") && text.endsWith("]")) text = text.slice(1, -1);
+                    values = text.split(",");
+                }
+
+                const seen = new Set();
+                const result = [];
+                values.forEach(function (value) {
+                    const canonical = canonicalizeDebaterName(value);
+                    if (!canonical) return;
+                    const key = normalizeNameKey(canonical);
+                    if (seen.has(key)) return;
+                    seen.add(key);
+                    result.push(canonical);
+                });
+                return result;
+            }
+
+            function parseDebatersFromQuery(searchParams) {
+                const values = searchParams.getAll("debaters");
+                const seen = new Set();
+                const result = [];
+                values.forEach(function (value) {
+                    parseDebatersParam(value).forEach(function (name) {
+                        const key = normalizeNameKey(name);
+                        if (!key || seen.has(key)) return;
+                        seen.add(key);
+                        result.push(name);
+                    });
+                });
+                return result;
+            }
+
+            function parseArgumentIndex(rawValue) {
+                const text = String(rawValue || "").trim();
+                if (!text) return null;
+                const acMatch = text.match(/^AC_?(\d+)$/i);
+                if (acMatch) {
+                    const displayIndex = Number(acMatch[1]);
+                    if (!Number.isFinite(displayIndex) || displayIndex < 1) return null;
+                    return displayIndex;
+                }
+                const nMatch = text.match(/^(\d+)$/);
+                if (nMatch) {
+                    const displayIndex = Number(nMatch[1]);
+                    if (!Number.isFinite(displayIndex) || displayIndex < 1) return null;
+                    return displayIndex;
+                }
+                const anyAcMatch = text.match(/AC_?(\d+)/i);
+                if (anyAcMatch) {
+                    const displayIndex = Number(anyAcMatch[1]);
+                    if (!Number.isFinite(displayIndex) || displayIndex < 1) return null;
+                    return displayIndex;
+                }
+                return null;
+            }
+
+            function parseArgumentInternalIndex(rawValue) {
+                const text = String(rawValue || "").trim();
+                if (!text) return null;
+                const acMatch = text.match(/^AC_?(\d+)$/i) || text.match(/AC_?(\d+)/i);
+                if (!acMatch) return null;
+                const internalIndex = Number(acMatch[1]);
+                if (!Number.isFinite(internalIndex) || internalIndex < 0) return null;
+                return internalIndex;
+            }
+
+            function getArgumentDisplayOffset(scopeNodeIds) {
+                let minInternalIndex = null;
+                Object.keys(nodeTypes).forEach(function (nodeId) {
+                    if (nodeTypes[nodeId] !== "ARGUMENT") return;
+                    if (scopeNodeIds && !scopeNodeIds.has(nodeId)) return;
+                    const internalIndex = parseArgumentInternalIndex(nodeId);
+                    if (internalIndex === null) return;
+                    if (minInternalIndex === null || internalIndex < minInternalIndex) minInternalIndex = internalIndex;
+                });
+                return minInternalIndex === 0 ? 1 : 0;
+            }
+
+            function getArgumentDisplayIndex(argumentId, displayOffset) {
+                const internalIndex = parseArgumentInternalIndex(argumentId);
+                if (internalIndex !== null) return internalIndex + (displayOffset || 0);
+                return parseArgumentIndex(argumentId);
+            }
+
+            function parseAcRangesParam(rawValue) {
+                if (rawValue === null || rawValue === undefined) return [];
+                let raw = String(rawValue).trim();
+                if (!raw) return [];
+                try {
+                    raw = decodeURIComponent(raw);
+                } catch (error) {
+                }
+
+                let tokens = null;
+                const parseCandidates = [raw, raw.replace(/'/g, "\"")];
+                for (let i = 0; i < parseCandidates.length; i += 1) {
+                    try {
+                        const parsed = JSON.parse(parseCandidates[i]);
+                        if (Array.isArray(parsed)) {
+                            tokens = parsed.map(function (item) { return String(item); });
+                            break;
+                        }
+                        if (typeof parsed === "string" || typeof parsed === "number") {
+                            tokens = [String(parsed)];
+                            break;
+                        }
+                    } catch (error) {
+                    }
+                }
+
+                if (!tokens) {
+                    let text = raw;
+                    if (text.startsWith("[") && text.endsWith("]")) text = text.slice(1, -1);
+                    tokens = text.split(",");
+                }
+
+                const ranges = [];
+                tokens.forEach(function (token) {
+                    const cleaned = String(token || "").trim().replace(/^['"]+|['"]+$/g, "");
+                    if (!cleaned) return;
+                    const dashPos = cleaned.indexOf("-");
+                    if (dashPos === -1) {
+                        const index = parseArgumentIndex(cleaned);
+                        if (index === null) return;
+                        ranges.push({ start: index, end: index });
+                        return;
+                    }
+
+                    const startRaw = cleaned.slice(0, dashPos).trim();
+                    const endRaw = cleaned.slice(dashPos + 1).trim();
+                    const startIndex = parseArgumentIndex(startRaw);
+                    const endIndex = parseArgumentIndex(endRaw);
+                    if (startIndex === null || endIndex === null) return;
+                    ranges.push({
+                        start: Math.min(startIndex, endIndex),
+                        end: Math.max(startIndex, endIndex)
+                    });
+                });
+
+                return ranges;
+            }
+
+            function parseAcRangesFromQuery(searchParams) {
+                const values = searchParams.getAll("ac").concat(searchParams.getAll("AC"));
+                const seen = new Set();
+                const ranges = [];
+                values.forEach(function (value) {
+                    parseAcRangesParam(value).forEach(function (range) {
+                        const key = range.start + "-" + range.end;
+                        if (seen.has(key)) return;
+                        seen.add(key);
+                        ranges.push(range);
+                    });
+                });
+                return ranges;
+            }
+
+            function parseAcceptanceRangesParam(rawValue) {
+                if (rawValue === null || rawValue === undefined) return [];
+                let raw = String(rawValue).trim();
+                if (!raw) return [];
+                try {
+                    raw = decodeURIComponent(raw);
+                } catch (error) {
+                }
+
+                let tokens = null;
+                const parseCandidates = [raw, raw.replace(/'/g, "\"")];
+                for (let i = 0; i < parseCandidates.length; i += 1) {
+                    try {
+                        const parsed = JSON.parse(parseCandidates[i]);
+                        if (Array.isArray(parsed)) {
+                            tokens = parsed.map(function (item) { return String(item); });
+                            break;
+                        }
+                        if (typeof parsed === "string" || typeof parsed === "number") {
+                            tokens = [String(parsed)];
+                            break;
+                        }
+                    } catch (error) {
+                    }
+                }
+
+                if (!tokens) {
+                    let text = raw;
+                    if (text.startsWith("[") && text.endsWith("]")) text = text.slice(1, -1);
+                    tokens = text.split(",");
+                }
+
+                const ranges = [];
+                tokens.forEach(function (token) {
+                    const cleaned = String(token || "").trim().replace(/^['"]+|['"]+$/g, "");
+                    if (!cleaned) return;
+
+                    const rangeMatch = cleaned.match(/^(-?(?:\d+(?:\.\d+)?|\.\d+))\s*-\s*(-?(?:\d+(?:\.\d+)?|\.\d+))$/);
+                    if (rangeMatch) {
+                        const startValue = toFiniteNumber(rangeMatch[1]);
+                        const endValue = toFiniteNumber(rangeMatch[2]);
+                        if (startValue === null || endValue === null) return;
+                        ranges.push({
+                            min: Math.min(startValue, endValue),
+                            max: Math.max(startValue, endValue),
+                            isThreshold: false
+                        });
+                        return;
+                    }
+
+                    const threshold = toFiniteNumber(cleaned);
+                    if (threshold === null) return;
+                    ranges.push({
+                        min: threshold,
+                        max: null,
+                        isThreshold: true
+                    });
+                });
+
+                return ranges;
+            }
+
+            function parseAcceptanceRangesFromQuery(searchParams) {
+                const values = searchParams.getAll("acceptance");
+                const seen = new Set();
+                const ranges = [];
+                values.forEach(function (value) {
+                    parseAcceptanceRangesParam(value).forEach(function (range) {
+                        const key = String(range.min) + "|" + (range.max === null ? "" : String(range.max)) + "|" + String(range.isThreshold);
+                        if (seen.has(key)) return;
+                        seen.add(key);
+                        ranges.push(range);
+                    });
+                });
+                return ranges;
+            }
+
+            const query = new URLSearchParams(window.location.search);
+            const showClasses = parseQueryBoolean(query.get("showClasses"), true);
+            const showTextOf = parseQueryBoolean(query.get("showTextOf"), false);
+            const showArgumentGraphOnly = parseQueryBoolean(query.get("AG") || query.get("ag"), false);
+            const requestedDebaters = parseDebatersFromQuery(query);
+            const requestedAcRanges = parseAcRangesFromQuery(query);
+            const requestedAcceptanceRanges = parseAcceptanceRangesFromQuery(query);
+
+            const svg = document.getElementById("graph");
+            const statusEl = document.getElementById("status");
+            const camera = document.getElementById("camera");
+            const edgeLayer = document.getElementById("edge-layer");
+            const nodeLayer = document.getElementById("node-layer");
+
+            let triples = [];
+            let filteredTriples = [];
+            let links = [];
+            let linkKeySet = new Set();
+            let nodeTypes = {};
+            let relationScores = {};
+            let strengthMetrics = {};
+            let componentContents = {};
+            let componentMap = {};
+
+            let nodes = [];
+            let nodeById = new Map();
+            let edgeRefs = [];
+            let nodeRefs = [];
+
+            let transform = { x: 0, y: 0, k: 0.8 };
+            let draggingNodeId = null;
+            let dragOffsetX = 0;
+            let dragOffsetY = 0;
+            let isPanning = false;
+            let lastMouseX = 0;
+            let lastMouseY = 0;
+
+            let simulationEnergy = 0;
+            let rafId = 0;
+            let idCounter = 0;
+            let lastNodeClickTime = {};
+            let lastClickPos = { x: 0, y: 0 };
+
+            function nextId() {
+                idCounter += 1;
+                return "t_" + idCounter;
+            }
+
+            function setStatus(message, isError) {
+                statusEl.style.display = "block";
+                statusEl.textContent = message;
+                if (isError) {
+                    statusEl.style.borderColor = "#fecaca";
+                    statusEl.style.color = "#b91c1c";
+                    statusEl.style.background = "rgba(255, 241, 242, 0.97)";
+                } else {
+                    statusEl.style.borderColor = "#e2e8f0";
+                    statusEl.style.color = "#334155";
+                    statusEl.style.background = "rgba(255, 255, 255, 0.95)";
+                }
+            }
+
+            function clearStatus() {
+                statusEl.style.display = "none";
+            }
+
+            function escapeRegExp(text) {
+                return text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+            }
+
+            function getNodeColor(type) {
+                return NODE_COLORS[type] || DEFAULT_NODE_COLOR;
+            }
+
+            function toFiniteNumber(value) {
+                if (typeof value === "number" && Number.isFinite(value)) return value;
+                if (typeof value === "string") {
+                    const parsed = Number.parseFloat(value);
+                    if (Number.isFinite(parsed)) return parsed;
+                }
+                return null;
+            }
+
+            function toCanonicalArgumentMetricKey(rawKey) {
+                const text = String(rawKey || "").trim();
+                if (!text) return "";
+                const exactAc = text.match(/^AC_?(\d+)$/i);
+                if (exactAc) return "AC" + Number(exactAc[1]);
+                const anyAc = text.match(/AC_?(\d+)/i);
+                if (anyAc) return "AC" + Number(anyAc[1]);
+                const numeric = text.match(/^(\d+)$/);
+                if (numeric) return "AC" + Number(numeric[1]);
+                return text;
+            }
+
+            function normalizeArgumentMetricMap(rawMap) {
+                const normalizedMap = {};
+                if (!rawMap || typeof rawMap !== "object") return normalizedMap;
+                Object.keys(rawMap).forEach(function (key) {
+                    const canonical = toCanonicalArgumentMetricKey(key) || String(key);
+                    normalizedMap[canonical] = rawMap[key];
+                });
+                return normalizedMap;
+            }
+
+            function getNodeScore(id) {
+                const score = strengthMetrics[id];
+                if (Array.isArray(score) && score.length >= 1) return toFiniteNumber(score[0]);
+                return toFiniteNumber(score);
+            }
+
+            function getNodeScoreU(id) {
+                const score = strengthMetrics[id];
+                if (Array.isArray(score) && score.length >= 2) return toFiniteNumber(score[1]);
+                return null;
+            }
+
+            function getNodeContent(id) {
+                if (nodeTypes[id] === "COMPONENT") return componentContents[id] || id;
+                return id;
+            }
+
+            function toSubscriptDigits(value) {
+                const map = {
+                    "0": "₀",
+                    "1": "₁",
+                    "2": "₂",
+                    "3": "₃",
+                    "4": "₄",
+                    "5": "₅",
+                    "6": "₆",
+                    "7": "₇",
+                    "8": "₈",
+                    "9": "₉"
+                };
+                return String(value).replace(/\d/g, function (digit) {
+                    return map[digit] || digit;
+                });
+            }
+
+            function getAcLabel(id) {
+                const internalIndex = parseArgumentInternalIndex(id);
+                if (internalIndex === null) return id;
+                const displayIndex = internalIndex + getArgumentDisplayOffset();
+                return "a" + toSubscriptDigits(displayIndex);
+            }
+
+            function getDisplayLabel(node) {
+                if (node.type === "ARGUMENT") return getAcLabel(node.id);
+                if (node.type === "COMPONENT") return getNodeContent(node.id);
+                return node.id;
+            }
+
+            function getFontSize(nodeType, labelLength) {
+                if (nodeType === "ARGUMENT") return 21;
+                if (nodeType === "COMPONENT" || nodeType === "FEATURE") {
+                    if (labelLength <= 2) return 17;
+                    if (labelLength <= 4) return 15;
+                    if (labelLength <= 8) return 12;
+                    if (labelLength <= 14) return 11;
+                    return 9;
+                }
+                if (labelLength <= 2) return 19;
+                if (labelLength <= 4) return 16;
+                if (labelLength <= 8) return 14;
+                if (labelLength <= 14) return 13;
+                return 12;
+            }
+
+            function labelLines(text, nodeType, maxCharsOverride) {
+                const raw = String(text || "").trim();
+                if (!raw) return [""];
+                const defaultMax = nodeType === "COMPONENT" ? 24 : 14;
+                const maxChars = Math.max(3, Number(maxCharsOverride) || defaultMax);
+                if (raw.length <= maxChars) return [raw];
+
+                const words = raw.split(/\s+/);
+                const lines = [];
+                let current = "";
+                for (let i = 0; i < words.length; i += 1) {
+                    const candidate = current ? current + " " + words[i] : words[i];
+                    if (candidate.length <= maxChars || !current) {
+                        current = candidate;
+                    } else {
+                        lines.push(current);
+                        current = words[i];
+                        if (lines.length === 2) break;
+                    }
+                }
+                if (lines.length < 2 && current) lines.push(current);
+
+                if (lines.length === 0) lines.push(raw.slice(0, maxChars - 1) + "…");
+                if (lines.length > 2) lines.length = 2;
+                if (lines.length === 2 && raw.length > (lines[0].length + lines[1].length + 1) && !lines[1].endsWith("…")) {
+                    lines[1] = lines[1].slice(0, Math.max(1, maxChars - 1)) + "…";
+                }
+                return lines;
+            }
+
+            function setTextLines(textEl, lines, color, fontSize, weight) {
+                while (textEl.firstChild) textEl.removeChild(textEl.firstChild);
+                textEl.setAttribute("fill", color);
+                textEl.setAttribute("font-size", String(fontSize));
+                textEl.setAttribute("font-weight", String(weight || 700));
+                textEl.setAttribute("text-anchor", "middle");
+                textEl.setAttribute("dominant-baseline", "middle");
+                textEl.setAttribute("pointer-events", "none");
+                textEl.setAttribute("x", "0");
+                textEl.setAttribute("y", "0");
+
+                const safeLines = lines && lines.length ? lines : [""];
+                if (safeLines.length === 1) {
+                    textEl.textContent = safeLines[0];
+                    return;
+                }
+
+                const lineHeight = fontSize * 1.05;
+                const startY = -((safeLines.length - 1) * lineHeight) / 2;
+                for (let i = 0; i < safeLines.length; i += 1) {
+                    const tspan = document.createElementNS(NS, "tspan");
+                    tspan.setAttribute("x", "0");
+                    tspan.setAttribute("y", (startY + i * lineHeight).toFixed(2));
+                    tspan.textContent = safeLines[i];
+                    textEl.appendChild(tspan);
+                }
+            }
+
+            function isTextInsideCircle(textEl, radius) {
+                const innerR = Math.max(1, radius);
+                const tspans = Array.from(textEl.querySelectorAll("tspan"));
+
+                if (tspans.length === 0) {
+                    const width = textEl.getComputedTextLength();
+                    return width <= innerR * 2;
+                }
+
+                for (let i = 0; i < tspans.length; i += 1) {
+                    const tspan = tspans[i];
+                    const y = Number.parseFloat(tspan.getAttribute("y") || "0");
+                    const allowed = 2 * Math.sqrt(Math.max(0, innerR * innerR - y * y));
+                    if (tspan.getComputedTextLength() > allowed) return false;
+                }
+
+                return true;
+            }
+
+            function shrinkLineToWidth(lineEl, maxWidth) {
+                if (!lineEl) return;
+                if (lineEl.getComputedTextLength() <= maxWidth) return;
+
+                let text = String(lineEl.textContent || "").replace(/…+$/, "");
+                if (!text) {
+                    lineEl.textContent = "";
+                    return;
+                }
+
+                while (text.length > 1) {
+                    lineEl.textContent = text + "…";
+                    if (lineEl.getComputedTextLength() <= maxWidth) return;
+                    text = text.slice(0, -1);
+                }
+
+                lineEl.textContent = "…";
+            }
+
+            function forceTextInsideCircle(textEl, radius) {
+                const innerR = Math.max(1, radius);
+                const tspans = Array.from(textEl.querySelectorAll("tspan"));
+
+                if (tspans.length === 0) {
+                    shrinkLineToWidth(textEl, innerR * 2);
+                    return;
+                }
+
+                for (let i = 0; i < tspans.length; i += 1) {
+                    const tspan = tspans[i];
+                    const y = Number.parseFloat(tspan.getAttribute("y") || "0");
+                    const maxWidth = 2 * Math.sqrt(Math.max(0, innerR * innerR - y * y));
+                    shrinkLineToWidth(tspan, maxWidth);
+                }
+            }
+
+            function setFittedNodeLabel(textEl, labelText, nodeType, baseFontSize, textColor) {
+                const innerR = DEFAULT_NODE_RADIUS - 6;
+                let fontSize = baseFontSize;
+
+                for (let attempt = 0; attempt < 10; attempt += 1) {
+                    const maxChars = Math.max(3, Math.floor((innerR * 1.6) / (fontSize * 0.62)));
+                    const lines = labelLines(labelText, nodeType, maxChars);
+                    setTextLines(textEl, lines, textColor, fontSize, 700);
+                    if (isTextInsideCircle(textEl, innerR)) {
+                        forceTextInsideCircle(textEl, innerR);
+                        return;
+                    }
+                    fontSize -= 1;
+                    if (fontSize < 8) break;
+                }
+
+                const fallbackChars = Math.max(2, Math.floor((innerR * 1.25) / (Math.max(8, fontSize) * 0.62)));
+                const fallbackLines = labelLines(labelText, nodeType, fallbackChars);
+                setTextLines(textEl, fallbackLines, textColor, Math.max(8, fontSize), 700);
+                forceTextInsideCircle(textEl, innerR);
+            }
+
+            function classifyEdge(triple) {
+                const sourceType = nodeTypes[triple.subject];
+                const targetType = nodeTypes[triple.object];
+                const predicateUpper = String(triple.predicate || "").toUpperCase();
+
+                const isEntityFeature = (sourceType === "ENTITY" && targetType === "FEATURE") || (sourceType === "FEATURE" && targetType === "ENTITY");
+                const isAttack = predicateUpper.includes("ATTACK");
+                const isSupport = predicateUpper.includes("SUPPORT") && !isEntityFeature;
+                const isAuthor = predicateUpper.includes("AUTHOR") || (sourceType === "ARGUMENT" && targetType === "ENTITY");
+                const isContent = predicateUpper.includes("HAS CONTENT") || (sourceType === "ARGUMENT" && targetType === "COMPONENT");
+                const isClass = predicateUpper.includes("HAS CLASS") || targetType === "CLASS";
+
+                let style = EDGE_STYLES.DEFAULT;
+                if (isAttack) style = EDGE_STYLES.ATTACK;
+                else if (isSupport) style = EDGE_STYLES.SUPPORT;
+                else if (isEntityFeature) style = EDGE_STYLES.ENTITY_FEATURE;
+                else if ((sourceType === "ARGUMENT" && targetType === "ENTITY") || (sourceType === "ENTITY" && targetType === "ARGUMENT")) style = EDGE_STYLES.AC_ENTITY;
+                else if (isContent) style = EDGE_STYLES.COMPONENT;
+                else if (isClass) style = EDGE_STYLES.CLASS;
+
+                const score = relationScores[triple.id];
+                let showLabel = true;
+                let label = String(triple.predicate || "");
+                if (isAttack || isSupport) {
+                    if (typeof score === "number") label = score.toFixed(3);
+                    else label = "";
+                    showLabel = label !== "";
+                } else if (isAuthor || isContent || isClass) {
+                    showLabel = false;
+                }
+
+                const showScoreBadge = typeof score === "number" && score !== 0 && !isAttack && !isSupport;
+                return { style, isClass, label, showLabel, showScoreBadge };
+            }
+
+            function getLinkPath(sourceId, targetId) {
+                const source = nodeById.get(sourceId);
+                const target = nodeById.get(targetId);
+                if (!source || !target) return { d: "", midX: 0, midY: 0 };
+
+                const tRadius = target.radius || DEFAULT_NODE_RADIUS;
+                const totalOffset = tRadius + ARROW_LENGTH;
+                const keyReverse = targetId + "->" + sourceId;
+                const isBidirectional = linkKeySet.has(keyReverse);
+
+                const dx = target.x - source.x;
+                const dy = target.y - source.y;
+                const midX = (source.x + target.x) / 2;
+                const midY = (source.y + target.y) / 2;
+
+                if (!isBidirectional) {
+                    const angle = Math.atan2(dy, dx);
+                    const endX = target.x - totalOffset * Math.cos(angle);
+                    const endY = target.y - totalOffset * Math.sin(angle);
+                    return { d: "M " + source.x + " " + source.y + " L " + endX + " " + endY, midX: midX, midY: midY };
+                }
+
+                const dist = Math.max(0.1, Math.sqrt(dx * dx + dy * dy));
+                const nx = -dy / dist;
+                const ny = dx / dist;
+                const cx = midX + nx * BIDIRECTIONAL_CURVE_OFFSET;
+                const cy = midY + ny * BIDIRECTIONAL_CURVE_OFFSET;
+
+                const cvx = target.x - cx;
+                const cvy = target.y - cy;
+                const cAngle = Math.atan2(cvy, cvx);
+                const endX = target.x - totalOffset * Math.cos(cAngle);
+                const endY = target.y - totalOffset * Math.sin(cAngle);
+
+                const lx = 0.25 * source.x + 0.5 * cx + 0.25 * target.x;
+                const ly = 0.25 * source.y + 0.5 * cy + 0.25 * target.y;
+                return { d: "M " + source.x + " " + source.y + " Q " + cx + " " + cy + " " + endX + " " + endY, midX: lx, midY: ly };
+            }
+
+            function clientToGraph(clientX, clientY) {
+                const rect = svg.getBoundingClientRect();
+                return {
+                    x: (clientX - rect.left - rect.width / 2 - transform.x) / transform.k,
+                    y: (clientY - rect.top - rect.height / 2 - transform.y) / transform.k
+                };
+            }
+
+            function createSvg(tag) {
+                return document.createElementNS(NS, tag);
+            }
+
+            function parseRelationScore(rawPredicate) {
+                const text = String(rawPredicate || "");
+                if (!text.includes("=")) return { relation: text.toUpperCase(), score: 0 };
+                const parts = text.split("=");
+                const relation = String(parts[0] || "").trim().toUpperCase();
+                const score = Number.parseFloat(String(parts[1] || "").trim());
+                return { relation: relation, score: Number.isFinite(score) ? score : 0 };
+            }
+
+            function resolveDebaterEntityIds() {
+                if (!requestedDebaters.length) return [];
+                const entities = Object.keys(nodeTypes).filter(function (id) {
+                    return nodeTypes[id] === "ENTITY";
+                });
+                const entitiesByLower = new Map();
+                const entitiesByNormalized = new Map();
+                entities.forEach(function (entityId) {
+                    const lower = String(entityId).toLowerCase();
+                    const normalized = normalizeNameKey(entityId);
+                    entitiesByLower.set(lower, entityId);
+                    entitiesByNormalized.set(normalized, entityId);
+                });
+
+                const resolved = [];
+                requestedDebaters.forEach(function (name) {
+                    const lowerName = String(name).toLowerCase();
+                    const normalizedName = normalizeNameKey(name);
+                    let match = entitiesByLower.get(lowerName) || entitiesByNormalized.get(normalizedName);
+                    if (!match && normalizedName) {
+                        entitiesByNormalized.forEach(function (entityId, normalizedEntity) {
+                            if (match) return;
+                            if (normalizedEntity.includes(normalizedName) || normalizedName.includes(normalizedEntity)) {
+                                match = entityId;
+                            }
+                        });
+                    }
+                    if (match && resolved.indexOf(match) === -1) resolved.push(match);
+                });
+                return resolved;
+            }
+
+            function isAuthorTriple(triple) {
+                const predicateUpper = String(triple.predicate || "").toUpperCase();
+                if (predicateUpper.includes("AUTHOR")) return true;
+                const sourceType = nodeTypes[triple.subject];
+                const targetType = nodeTypes[triple.object];
+                return sourceType === "ARGUMENT" && targetType === "ENTITY";
+            }
+
+            function isArgumentIdInRequestedRanges(argumentId, displayOffset) {
+                if (!requestedAcRanges.length) return false;
+                const index = getArgumentDisplayIndex(argumentId, displayOffset);
+                if (index === null) return false;
+                return requestedAcRanges.some(function (range) {
+                    return index >= range.start && index <= range.end;
+                });
+            }
+
+            function resolveAcArgumentIds(scopeTriples) {
+                if (!requestedAcRanges.length) return [];
+                const scopeNodeIds = new Set();
+                scopeTriples.forEach(function (triple) {
+                    scopeNodeIds.add(triple.subject);
+                    scopeNodeIds.add(triple.object);
+                });
+                const displayOffset = getArgumentDisplayOffset(scopeNodeIds);
+
+                return Object.keys(nodeTypes).filter(function (nodeId) {
+                    return nodeTypes[nodeId] === "ARGUMENT" && scopeNodeIds.has(nodeId) && isArgumentIdInRequestedRanges(nodeId, displayOffset);
+                });
+            }
+
+            function isArgumentInRequestedAcceptance(argumentId) {
+                if (!requestedAcceptanceRanges.length) return false;
+                const score = getNodeScoreU(argumentId);
+                if (score === null || !Number.isFinite(score)) return false;
+                return requestedAcceptanceRanges.some(function (range) {
+                    if (range.isThreshold) return score >= range.min;
+                    return score >= range.min && score <= range.max;
+                });
+            }
+
+            function resolveAcceptanceArgumentIds(scopeTriples) {
+                if (!requestedAcceptanceRanges.length) return [];
+                const scopeNodeIds = new Set();
+                scopeTriples.forEach(function (triple) {
+                    scopeNodeIds.add(triple.subject);
+                    scopeNodeIds.add(triple.object);
+                });
+
+                return Object.keys(nodeTypes).filter(function (nodeId) {
+                    return nodeTypes[nodeId] === "ARGUMENT" && scopeNodeIds.has(nodeId) && isArgumentInRequestedAcceptance(nodeId);
+                });
+            }
+
+            function getAcScopedTriples(allTriples, argumentIds) {
+                if (!argumentIds.length) return allTriples;
+                const selectedArguments = new Set(argumentIds);
+                const keepNodes = new Set(argumentIds);
+
+                allTriples.forEach(function (triple) {
+                    const sourceType = nodeTypes[triple.subject];
+                    const targetType = nodeTypes[triple.object];
+
+                    if (selectedArguments.has(triple.subject) && targetType !== "ARGUMENT") keepNodes.add(triple.object);
+                    if (selectedArguments.has(triple.object) && sourceType !== "ARGUMENT") keepNodes.add(triple.subject);
+                });
+
+                let expanded = true;
+                while (expanded) {
+                    expanded = false;
+                    allTriples.forEach(function (triple) {
+                        const sourceType = nodeTypes[triple.subject];
+                        const targetType = nodeTypes[triple.object];
+
+                        if (keepNodes.has(triple.subject) && (sourceType === "ENTITY" || sourceType === "FEATURE")) {
+                            if ((targetType === "FEATURE" || targetType === "CLASS") && !keepNodes.has(triple.object)) {
+                                keepNodes.add(triple.object);
+                                expanded = true;
+                            }
+                        }
+                        if (keepNodes.has(triple.object) && (targetType === "ENTITY" || targetType === "FEATURE")) {
+                            if ((sourceType === "FEATURE" || sourceType === "CLASS") && !keepNodes.has(triple.subject)) {
+                                keepNodes.add(triple.subject);
+                                expanded = true;
+                            }
+                        }
+                    });
+                }
+
+                return allTriples.filter(function (triple) {
+                    const sourceType = nodeTypes[triple.subject];
+                    const targetType = nodeTypes[triple.object];
+                    if (!keepNodes.has(triple.subject) || !keepNodes.has(triple.object)) return false;
+                    if (sourceType === "ARGUMENT" && !selectedArguments.has(triple.subject)) return false;
+                    if (targetType === "ARGUMENT" && !selectedArguments.has(triple.object)) return false;
+                    return true;
+                });
+            }
+
+            function getDebaterScopedTriples(allTriples, debaterEntityIds) {
+                if (!debaterEntityIds.length) return allTriples;
+                const debaterSet = new Set(debaterEntityIds);
+                const selectedArguments = new Set();
+
+                allTriples.forEach(function (triple) {
+                    if (!isAuthorTriple(triple)) return;
+                    if (debaterSet.has(triple.object)) selectedArguments.add(triple.subject);
+                    if (debaterSet.has(triple.subject)) selectedArguments.add(triple.object);
+                });
+
+                const keepNodes = new Set(debaterEntityIds);
+                selectedArguments.forEach(function (argumentId) {
+                    keepNodes.add(argumentId);
+                });
+
+                allTriples.forEach(function (triple) {
+                    const sourceType = nodeTypes[triple.subject];
+                    const targetType = nodeTypes[triple.object];
+
+                    if (selectedArguments.has(triple.subject) && targetType !== "ARGUMENT") keepNodes.add(triple.object);
+                    if (selectedArguments.has(triple.object) && sourceType !== "ARGUMENT") keepNodes.add(triple.subject);
+                });
+
+                let expanded = true;
+                while (expanded) {
+                    expanded = false;
+                    allTriples.forEach(function (triple) {
+                        const sourceType = nodeTypes[triple.subject];
+                        const targetType = nodeTypes[triple.object];
+
+                        if (keepNodes.has(triple.subject) && (sourceType === "ENTITY" || sourceType === "FEATURE")) {
+                            if ((targetType === "FEATURE" || targetType === "CLASS") && !keepNodes.has(triple.object)) {
+                                keepNodes.add(triple.object);
+                                expanded = true;
+                            }
+                        }
+
+                        if (keepNodes.has(triple.object) && (targetType === "ENTITY" || targetType === "FEATURE")) {
+                            if ((sourceType === "FEATURE" || sourceType === "CLASS") && !keepNodes.has(triple.subject)) {
+                                keepNodes.add(triple.subject);
+                                expanded = true;
+                            }
+                        }
+                    });
+                }
+
+                return allTriples.filter(function (triple) {
+                    const sourceType = nodeTypes[triple.subject];
+                    const targetType = nodeTypes[triple.object];
+                    if (!keepNodes.has(triple.subject) || !keepNodes.has(triple.object)) return false;
+
+                    if (sourceType === "ARGUMENT" && !selectedArguments.has(triple.subject)) return false;
+                    if (targetType === "ARGUMENT" && !selectedArguments.has(triple.object)) return false;
+                    return true;
+                });
+            }
+
+            function getInitialNodePosition(type, slotIndex) {
+                const minSpacing = (DEFAULT_NODE_RADIUS * 2) + 48;
+                const fallbackRadius = Math.max(minSpacing, (SIMULATION.RADIAL_TARGETS[type] || 300) * 1.4);
+                const band = TYPE_LAYOUT_BAND[type] || { baseRadius: fallbackRadius, spacing: minSpacing, stretchX: 1, stretchY: 1 };
+                const baseRadius = Math.max(fallbackRadius, band.baseRadius);
+                const spacing = Math.max(minSpacing, band.spacing);
+                const phase = TYPE_LAYOUT_PHASE[type] || 0;
+                const angle = phase + ((slotIndex + 1) * GOLDEN_ANGLE);
+                const radialDrift = Math.sqrt(slotIndex + 1) * spacing;
+                const wobble = Math.sin((slotIndex + 1) * 1.37 + phase) * (spacing * 0.34);
+                const radius = baseRadius + radialDrift + wobble;
+                return {
+                    x: Math.cos(angle) * radius * band.stretchX,
+                    y: Math.sin(angle) * radius * band.stretchY
+                };
+            }
+
+            function resolveInitialOverlaps(layoutNodes) {
+                if (!Array.isArray(layoutNodes) || layoutNodes.length < 2) return;
+
+                const anchors = layoutNodes.map(function (node) {
+                    return { x: node.x, y: node.y };
+                });
+                const minGap = 24;
+                const maxIterations = 60;
+                const anchorStrength = 0.02;
+
+                for (let iter = 0; iter < maxIterations; iter += 1) {
+                    let overlapFound = false;
+
+                    for (let i = 0; i < layoutNodes.length; i += 1) {
+                        for (let j = i + 1; j < layoutNodes.length; j += 1) {
+                            const n1 = layoutNodes[i];
+                            const n2 = layoutNodes[j];
+                            let pairGap = minGap;
+                            if (n1.type === "ENTITY" && n2.type === "ENTITY") pairGap += 44;
+                            else if (n1.type === "ENTITY" || n2.type === "ENTITY") pairGap += 20;
+                            const required = (n1.radius || DEFAULT_NODE_RADIUS) + (n2.radius || DEFAULT_NODE_RADIUS) + pairGap;
+                            let dx = n1.x - n2.x;
+                            let dy = n1.y - n2.y;
+                            let distSq = (dx * dx) + (dy * dy);
+                            if (distSq >= required * required) continue;
+
+                            overlapFound = true;
+                            let dist = Math.sqrt(distSq);
+                            if (dist < 0.001) {
+                                const angle = ((i + 1) * (j + 1)) * 0.61803398875;
+                                dx = Math.cos(angle);
+                                dy = Math.sin(angle);
+                                dist = 1;
+                                distSq = 1;
+                            }
+
+                            const push = (required - dist) * 0.5;
+                            const ux = dx / Math.sqrt(distSq);
+                            const uy = dy / Math.sqrt(distSq);
+
+                            n1.x += ux * push;
+                            n1.y += uy * push;
+                            n2.x -= ux * push;
+                            n2.y -= uy * push;
+                        }
+                    }
+
+                    for (let i = 0; i < layoutNodes.length; i += 1) {
+                        const node = layoutNodes[i];
+                        node.x += (anchors[i].x - node.x) * anchorStrength;
+                        node.y += (anchors[i].y - node.y) * anchorStrength;
+                    }
+
+                    if (!overlapFound) break;
+                }
+            }
+
+            function buildGraphFromData(data) {
+                triples = [];
+                filteredTriples = [];
+                links = [];
+                linkKeySet = new Set();
+                nodeTypes = {};
+                relationScores = {};
+                componentContents = {};
+                strengthMetrics = {};
+                idCounter = 0;
+
+                componentMap = data && data.argument_components ? data.argument_components : {};
+                const strength = normalizeArgumentMetricMap(data && data.strength ? data.strength : {});
+                const peopleList = data && Array.isArray(data.entities) ? data.entities : [];
+                const entitiesList = data && Array.isArray(data.concepts) ? data.concepts : [];
+                const finalKB = data && Array.isArray(data.knowledge_base) ? data.knowledge_base : [];
+                const authorList = Array.isArray(data.authorship) ? data.authorship : [];
+                const relationScoresData = data && Array.isArray(data.argument_relations) ? data.argument_relations : [];
+                const relationClassData = data && Array.isArray(data.argument_relations) ? data.argument_relations : [];
+
+                Object.keys(strength).forEach(function (acKey) {
+                    strengthMetrics[acKey] = Array.isArray(strength[acKey]) ? strength[acKey].slice() : strength[acKey];
+                });
+
+                const authors = [];
+                peopleList.forEach(function (person) {
+                    const name = String(person || "").trim();
+                    if (!name) return;
+                    nodeTypes[name] = "ENTITY";
+                    if (!authors.includes(name)) authors.push(name);
+                });
+
+                finalKB.forEach(function (item) {
+                    if (!Array.isArray(item) || item.length < 3) return;
+                    const subject = String(item[0]);
+                    const predicate = String(item[1]);
+                    const object = String(item[2]);
+
+                    if (!nodeTypes[subject]) nodeTypes[subject] = "FEATURE";
+                    if (!nodeTypes[object]) nodeTypes[object] = "FEATURE";
+                    if (authors.includes(subject)) nodeTypes[subject] = "ENTITY";
+                    if (authors.includes(object)) nodeTypes[object] = "ENTITY";
+
+                    triples.push({ id: nextId(), subject: subject, predicate: predicate, object: object });
+                });
+
+                const addedClass = new Set();
+                entitiesList.forEach(function (item) {
+                    if (!Array.isArray(item) || item.length < 2) return;
+                    const entityName = String(item[0] || "").trim();
+                    const semanticClass = String(item[1] || "").trim();
+                    if (!entityName || !semanticClass) return;
+
+                    const escapedEntity = escapeRegExp(entityName);
+                    const regex = new RegExp("\\b" + escapedEntity + "\\b");
+
+                    Object.keys(nodeTypes).forEach(function (nodeId) {
+                        const type = nodeTypes[nodeId];
+                        if (type !== "ENTITY" && type !== "FEATURE") return;
+
+                        const parts = String(nodeId).split(";");
+                        const match = parts.some(function (part) {
+                            return regex.test(part.trim());
+                        });
+                        if (!match) return;
+
+                        const key = nodeId + "|HAS CLASS|" + semanticClass;
+                        if (addedClass.has(key)) return;
+
+                        if (!nodeTypes[semanticClass]) nodeTypes[semanticClass] = "CLASS";
+                        triples.push({ id: nextId(), subject: nodeId, predicate: "HAS CLASS", object: semanticClass });
+                        addedClass.add(key);
+                    });
+                });
+
+                Object.keys(componentMap).forEach(function (acId) {
+                    const contentId = "content_" + acId;
+                    const contentText = String(componentMap[acId]);
+                    componentContents[contentId] = contentText;
+                    nodeTypes[contentId] = "COMPONENT";
+                    if (!nodeTypes[acId]) nodeTypes[acId] = "ARGUMENT";
+                    triples.push({ id: nextId(), subject: acId, predicate: "HAS CONTENT", object: contentId });
+                });
+
+                authorList.forEach(function (item) {
+                    if (!Array.isArray(item) || item.length < 3) return;
+                    const acId = String(item[0]);
+                    const relation = String(item[1]).toUpperCase();
+                    const authorName = String(item[2]);
+                    nodeTypes[acId] = "ARGUMENT";
+                    if (!nodeTypes[authorName]) nodeTypes[authorName] = "ENTITY";
+                    triples.push({ id: nextId(), subject: acId, predicate: relation, object: authorName });
+                });
+
+                const relationData = relationScoresData.length > 0 ? relationScoresData : relationClassData;
+                relationData.forEach(function (item) {
+                    if (!Array.isArray(item) || item.length < 3) return;
+                    const source = String(item[0]);
+                    const rawPredicate = String(item[1]);
+                    const target = String(item[2]);
+                    const parsed = parseRelationScore(rawPredicate);
+
+                    nodeTypes[source] = "ARGUMENT";
+                    nodeTypes[target] = "ARGUMENT";
+
+                    const id = nextId();
+                    relationScores[id] = parsed.score;
+                    triples.push({ id: id, subject: source, predicate: parsed.relation, object: target });
+                });
+            }
+
+            function rebuildGraphElements() {
+                const activeDebaterEntityIds = resolveDebaterEntityIds();
+                const useDebaterFilter = requestedDebaters.length > 0 && activeDebaterEntityIds.length > 0;
+                let scopedTriples = useDebaterFilter ? getDebaterScopedTriples(triples, activeDebaterEntityIds) : triples;
+                const activeAcArgumentIds = resolveAcArgumentIds(scopedTriples);
+                const useAcFilter = requestedAcRanges.length > 0 && activeAcArgumentIds.length > 0;
+                if (useAcFilter) scopedTriples = getAcScopedTriples(scopedTriples, activeAcArgumentIds);
+                const activeAcceptanceArgumentIds = resolveAcceptanceArgumentIds(scopedTriples);
+                const useAcceptanceFilter = requestedAcceptanceRanges.length > 0 && activeAcceptanceArgumentIds.length > 0;
+                if (useAcceptanceFilter) scopedTriples = getAcScopedTriples(scopedTriples, activeAcceptanceArgumentIds);
+                const activeArgumentFilterIds = useAcceptanceFilter ? activeAcceptanceArgumentIds : (useAcFilter ? activeAcArgumentIds : []);
+                const activeArgumentFilterSet = new Set(activeArgumentFilterIds);
+
+                filteredTriples = scopedTriples.filter(function (triple) {
+                    const sType = nodeTypes[triple.subject];
+                    const tType = nodeTypes[triple.object];
+                    if (showArgumentGraphOnly) {
+                        if (sType !== "ARGUMENT" || tType !== "ARGUMENT") return false;
+                        if (activeArgumentFilterSet.size > 0) {
+                            if (!activeArgumentFilterSet.has(triple.subject) || !activeArgumentFilterSet.has(triple.object)) return false;
+                        }
+                        return true;
+                    }
+                    if (!showClasses && (sType === "CLASS" || tType === "CLASS")) return false;
+                    if (!showTextOf && (sType === "COMPONENT" || tType === "COMPONENT")) return false;
+                    return true;
+                });
+
+                const activeNodeIds = new Set();
+                filteredTriples.forEach(function (triple) {
+                    activeNodeIds.add(triple.subject);
+                    activeNodeIds.add(triple.object);
+                });
+
+                if (showArgumentGraphOnly) {
+                    if (activeArgumentFilterSet.size > 0) {
+                        activeArgumentFilterIds.forEach(function (id) {
+                            activeNodeIds.add(id);
+                        });
+                    } else if (useDebaterFilter) {
+                        scopedTriples.forEach(function (triple) {
+                            if (nodeTypes[triple.subject] === "ARGUMENT") activeNodeIds.add(triple.subject);
+                            if (nodeTypes[triple.object] === "ARGUMENT") activeNodeIds.add(triple.object);
+                        });
+                    } else {
+                        Object.keys(nodeTypes).forEach(function (id) {
+                            if (nodeTypes[id] === "ARGUMENT") activeNodeIds.add(id);
+                        });
+                    }
+                } else {
+                    if (useDebaterFilter) {
+                        activeDebaterEntityIds.forEach(function (id) {
+                            activeNodeIds.add(id);
+                        });
+                    }
+                    if (activeArgumentFilterSet.size > 0) {
+                        activeArgumentFilterIds.forEach(function (id) {
+                            activeNodeIds.add(id);
+                        });
+                    }
+                    if (!useDebaterFilter && activeArgumentFilterSet.size === 0) {
+                        Object.keys(nodeTypes).forEach(function (id) {
+                            const type = nodeTypes[id];
+                            if (!showClasses && type === "CLASS") return;
+                            if (!showTextOf && type === "COMPONENT") return;
+                            activeNodeIds.add(id);
+                        });
+                    }
+                }
+
+                const prevMap = new Map(nodes.map(function (n) { return [n.id, n]; }));
+                const typeSlotCounter = {};
+                nodes = Array.from(activeNodeIds).map(function (id) {
+                    const type = nodeTypes[id] || "ENTITY";
+                    const existing = prevMap.get(id);
+                    if (existing) {
+                        existing.type = type;
+                        existing.radius = DEFAULT_NODE_RADIUS;
+                        return existing;
+                    }
+
+                    const slot = typeSlotCounter[type] || 0;
+                    typeSlotCounter[type] = slot + 1;
+                    const position = getInitialNodePosition(type, slot);
+                    return {
+                        id: id,
+                        type: type,
+                        x: position.x,
+                        y: position.y,
+                        vx: 0,
+                        vy: 0,
+                        radius: DEFAULT_NODE_RADIUS
+                    };
+                });
+                resolveInitialOverlaps(nodes);
+
+                nodeById = new Map(nodes.map(function (n) { return [n.id, n]; }));
+                links = filteredTriples.map(function (triple) {
+                    return { source: triple.subject, target: triple.object, label: triple.predicate };
+                });
+                linkKeySet = new Set(links.map(function (l) { return l.source + "->" + l.target; }));
+
+                while (edgeLayer.firstChild) edgeLayer.removeChild(edgeLayer.firstChild);
+                while (nodeLayer.firstChild) nodeLayer.removeChild(nodeLayer.firstChild);
+                edgeRefs = [];
+                nodeRefs = [];
+
+                filteredTriples.forEach(function (triple) {
+                    const group = createSvg("g");
+                    group.setAttribute("class", "edge");
+                    group.setAttribute("pointer-events", "none");
+
+                    const path = createSvg("path");
+                    path.setAttribute("fill", "none");
+                    path.setAttribute("stroke-width", "1.5");
+                    group.appendChild(path);
+
+                    const labelWrap = createSvg("g");
+                    const labelBg = createSvg("rect");
+                    labelBg.setAttribute("rx", "4");
+                    labelBg.setAttribute("fill-opacity", "1");
+                    labelBg.setAttribute("stroke-width", "1");
+                    const labelText = createSvg("text");
+                    labelText.setAttribute("font-size", "10");
+                    labelText.setAttribute("font-weight", "bold");
+                    labelText.setAttribute("text-anchor", "middle");
+                    labelText.setAttribute("dy", "4");
+                    labelText.setAttribute("pointer-events", "none");
+                    labelWrap.appendChild(labelBg);
+                    labelWrap.appendChild(labelText);
+                    group.appendChild(labelWrap);
+
+                    const scoreWrap = createSvg("g");
+                    const scoreBg = createSvg("rect");
+                    scoreBg.setAttribute("x", "-14");
+                    scoreBg.setAttribute("y", "0");
+                    scoreBg.setAttribute("width", "28");
+                    scoreBg.setAttribute("height", "14");
+                    scoreBg.setAttribute("rx", "2");
+                    scoreBg.setAttribute("fill", "white");
+                    scoreBg.setAttribute("stroke-width", "1");
+                    const scoreText = createSvg("text");
+                    scoreText.setAttribute("x", "0");
+                    scoreText.setAttribute("y", "10");
+                    scoreText.setAttribute("font-size", "9");
+                    scoreText.setAttribute("font-weight", "bold");
+                    scoreText.setAttribute("text-anchor", "middle");
+                    scoreText.setAttribute("pointer-events", "none");
+                    scoreWrap.appendChild(scoreBg);
+                    scoreWrap.appendChild(scoreText);
+                    group.appendChild(scoreWrap);
+
+                    edgeLayer.appendChild(group);
+                    edgeRefs.push({
+                        triple: triple,
+                        path: path,
+                        labelWrap: labelWrap,
+                        labelBg: labelBg,
+                        labelText: labelText,
+                        scoreWrap: scoreWrap,
+                        scoreBg: scoreBg,
+                        scoreText: scoreText
+                    });
+                });
+
+                nodes.forEach(function (node) {
+                    const group = createSvg("g");
+                    group.setAttribute("class", "node-group");
+                    group.setAttribute("pointer-events", "visiblePainted");
+                    group.style.cursor = "grab";
+
+                    const highlight = createSvg("circle");
+                    highlight.setAttribute("fill", "#64748b");
+                    highlight.setAttribute("opacity", "0.2");
+                    highlight.setAttribute("r", "0");
+                    group.appendChild(highlight);
+
+                    const circle = createSvg("circle");
+                    circle.setAttribute("class", "node-hit");
+                    circle.setAttribute("r", String(node.radius));
+                    circle.setAttribute("stroke-width", "2");
+                    group.appendChild(circle);
+
+                    const label = createSvg("text");
+                    label.setAttribute("dominant-baseline", "middle");
+                    label.setAttribute("text-anchor", "middle");
+                    label.setAttribute("pointer-events", "none");
+                    label.setAttribute("x", "0");
+                    label.setAttribute("y", "0");
+                    group.appendChild(label);
+
+                    const scoreWrap = createSvg("g");
+                    const scoreCircle = createSvg("circle");
+                    scoreCircle.setAttribute("r", "13");
+                    scoreCircle.setAttribute("fill", "white");
+                    scoreCircle.setAttribute("stroke-width", "1.5");
+                    scoreCircle.setAttribute("stroke-dasharray", "3 2");
+                    const scoreText = createSvg("text");
+                    scoreText.setAttribute("x", "0");
+                    scoreText.setAttribute("y", "4");
+                    scoreText.setAttribute("font-size", "10");
+                    scoreText.setAttribute("font-weight", "bold");
+                    scoreText.setAttribute("text-anchor", "middle");
+                    scoreWrap.appendChild(scoreCircle);
+                    scoreWrap.appendChild(scoreText);
+                    group.appendChild(scoreWrap);
+
+                    const scoreUWrap = createSvg("g");
+                    const scoreUCircle = createSvg("circle");
+                    scoreUCircle.setAttribute("r", "13");
+                    scoreUCircle.setAttribute("fill", "white");
+                    scoreUCircle.setAttribute("stroke-width", "1.5");
+                    const scoreUText = createSvg("text");
+                    scoreUText.setAttribute("x", "0");
+                    scoreUText.setAttribute("y", "4");
+                    scoreUText.setAttribute("font-size", "10");
+                    scoreUText.setAttribute("font-weight", "bold");
+                    scoreUText.setAttribute("text-anchor", "middle");
+                    scoreUWrap.appendChild(scoreUCircle);
+                    scoreUWrap.appendChild(scoreUText);
+                    group.appendChild(scoreUWrap);
+
+                    group.addEventListener("pointerdown", function (event) {
+                        event.stopPropagation();
+                        const dragNode = nodeById.get(node.id);
+                        if (!dragNode) return;
+
+                        const now = Date.now();
+                        const lastClick = lastNodeClickTime[node.id] || 0;
+                        const clickPos = { x: event.clientX, y: event.clientY };
+                        const distance = Math.sqrt(
+                            Math.pow(clickPos.x - lastClickPos.x, 2) + Math.pow(clickPos.y - lastClickPos.y, 2)
+                        );
+
+                        if (now - lastClick < 300 && distance < 50) {
+                            const fullText = node.type === "COMPONENT" ? getNodeContent(node.id) :
+                                node.type === "ARGUMENT" ? String(componentMap[node.id] || node.id) :
+                                    String(node.id);
+                            showNodePopup(node.id, fullText, event);
+                            lastNodeClickTime[node.id] = 0;
+                            return;
+                        }
+
+                        lastNodeClickTime[node.id] = now;
+                        lastClickPos = clickPos;
+
+                        draggingNodeId = node.id;
+                        const p = clientToGraph(event.clientX, event.clientY);
+                        dragOffsetX = p.x - dragNode.x;
+                        dragOffsetY = p.y - dragNode.y;
+                        group.style.cursor = "grabbing";
+                        svg.style.cursor = "grabbing";
+                        if (svg.setPointerCapture) svg.setPointerCapture(event.pointerId);
+                    });
+
+                    nodeLayer.appendChild(group);
+                    nodeRefs.push({
+                        nodeId: node.id,
+                        group: group,
+                        highlight: highlight,
+                        circle: circle,
+                        label: label,
+                        scoreWrap: scoreWrap,
+                        scoreCircle: scoreCircle,
+                        scoreText: scoreText,
+                        scoreUWrap: scoreUWrap,
+                        scoreUCircle: scoreUCircle,
+                        scoreUText: scoreUText
+                    });
+                });
+            }
+
+            function render() {
+                nodeById = new Map(nodes.map(function (n) { return [n.id, n]; }));
+
+                const rect = svg.getBoundingClientRect();
+                camera.setAttribute("transform", "translate(" + (transform.x + rect.width / 2) + ", " + (transform.y + rect.height / 2) + ") scale(" + transform.k + ")");
+
+                edgeRefs.forEach(function (edgeRef) {
+                    const pathInfo = getLinkPath(edgeRef.triple.subject, edgeRef.triple.object);
+                    if (!pathInfo.d) {
+                        edgeRef.path.setAttribute("display", "none");
+                        edgeRef.labelWrap.setAttribute("display", "none");
+                        edgeRef.scoreWrap.setAttribute("display", "none");
+                        return;
+                    }
+
+                    edgeRef.path.removeAttribute("display");
+                    edgeRef.path.setAttribute("d", pathInfo.d);
+
+                    const cls = classifyEdge(edgeRef.triple);
+                    edgeRef.path.setAttribute("stroke", cls.style.stroke);
+                    edgeRef.path.setAttribute("marker-end", cls.style.marker);
+                    edgeRef.path.setAttribute("stroke-dasharray", cls.isClass ? "5,5" : "0");
+
+                    if (cls.showLabel) {
+                        edgeRef.labelWrap.removeAttribute("display");
+                        const labelText = cls.label;
+                        const width = (labelText.length * 6) + 12;
+                        edgeRef.labelBg.setAttribute("x", String(pathInfo.midX - (labelText.length * 3) - 6));
+                        edgeRef.labelBg.setAttribute("y", String(pathInfo.midY - 9));
+                        edgeRef.labelBg.setAttribute("width", String(width));
+                        edgeRef.labelBg.setAttribute("height", "18");
+                        edgeRef.labelBg.setAttribute("fill", cls.style.labelFill);
+                        edgeRef.labelBg.setAttribute("stroke", cls.style.stroke);
+                        edgeRef.labelText.setAttribute("x", String(pathInfo.midX));
+                        edgeRef.labelText.setAttribute("y", String(pathInfo.midY));
+                        edgeRef.labelText.setAttribute("fill", cls.style.textColor);
+                        edgeRef.labelText.textContent = labelText;
+                    } else {
+                        edgeRef.labelWrap.setAttribute("display", "none");
+                    }
+
+                    if (cls.showScoreBadge) {
+                        edgeRef.scoreWrap.removeAttribute("display");
+                        edgeRef.scoreWrap.setAttribute("transform", "translate(" + pathInfo.midX + ", " + (pathInfo.midY + 10) + ")");
+                        edgeRef.scoreBg.setAttribute("stroke", cls.style.stroke);
+                        edgeRef.scoreText.setAttribute("fill", cls.style.textColor);
+                        edgeRef.scoreText.textContent = Number(relationScores[edgeRef.triple.id]).toFixed(2);
+                    } else {
+                        edgeRef.scoreWrap.setAttribute("display", "none");
+                    }
+                });
+
+                nodeRefs.forEach(function (nodeRef) {
+                    const node = nodeById.get(nodeRef.nodeId);
+                    if (!node) {
+                        nodeRef.group.setAttribute("display", "none");
+                        return;
+                    }
+                    nodeRef.group.removeAttribute("display");
+                    nodeRef.group.setAttribute("transform", "translate(" + node.x + ", " + node.y + ")");
+
+                    const colors = getNodeColor(node.type);
+                    nodeRef.highlight.setAttribute("r", draggingNodeId === node.id ? String(node.radius + 8) : "0");
+                    nodeRef.circle.setAttribute("r", String(node.radius));
+                    nodeRef.circle.setAttribute("fill", colors.fill);
+                    nodeRef.circle.setAttribute("stroke", colors.stroke);
+
+                    const labelText = String(getDisplayLabel(node));
+                    const fontSize = getFontSize(node.type, labelText.length);
+                    setFittedNodeLabel(nodeRef.label, labelText, node.type, fontSize, colors.text);
+                    nodeRef.label.setAttribute("title", labelText);
+
+                    const score = getNodeScore(node.id);
+                    if (score !== null && Number.isFinite(score)) {
+                        nodeRef.scoreWrap.removeAttribute("display");
+                        nodeRef.scoreWrap.setAttribute("transform", "translate(" + (node.radius * 0.7) + ", " + (-node.radius * 0.7) + ")");
+                        nodeRef.scoreCircle.setAttribute("stroke", colors.stroke);
+                        nodeRef.scoreText.setAttribute("fill", colors.text);
+                        nodeRef.scoreText.textContent = Number(score).toFixed(2);
+                    } else {
+                        nodeRef.scoreWrap.setAttribute("display", "none");
+                    }
+
+                    const scoreU = getNodeScoreU(node.id);
+                    if (scoreU !== null && Number.isFinite(scoreU)) {
+                        nodeRef.scoreUWrap.removeAttribute("display");
+                        nodeRef.scoreUWrap.setAttribute("transform", "translate(" + (node.radius * 0.7) + ", " + (node.radius * 0.7) + ")");
+                        nodeRef.scoreUCircle.setAttribute("stroke", colors.stroke);
+                        nodeRef.scoreUText.setAttribute("fill", colors.text);
+                        nodeRef.scoreUText.textContent = Number(scoreU).toFixed(2);
+                    } else {
+                        nodeRef.scoreUWrap.setAttribute("display", "none");
+                    }
+                });
+            }
+
+            function startSimulation() {
+                render();
+            }
+
+            function onPointerMove(event) {
+                if (draggingNodeId) {
+                    const dragNode = nodeById.get(draggingNodeId);
+                    if (!dragNode) return;
+                    const p = clientToGraph(event.clientX, event.clientY);
+                    dragNode.x = p.x - dragOffsetX;
+                    dragNode.y = p.y - dragOffsetY;
+                    dragNode.vx = 0;
+                    dragNode.vy = 0;
+                    render();
+                    return;
+                }
+
+                if (isPanning) {
+                    const dx = event.clientX - lastMouseX;
+                    const dy = event.clientY - lastMouseY;
+                    transform.x += dx;
+                    transform.y += dy;
+                    lastMouseX = event.clientX;
+                    lastMouseY = event.clientY;
+                    render();
+                }
+            }
+
+            function stopPointerInteraction() {
+                if (draggingNodeId) {
+                    const ref = nodeRefs.find(function (r) { return r.nodeId === draggingNodeId; });
+                    if (ref) ref.group.style.cursor = "grab";
+                }
+                draggingNodeId = null;
+                isPanning = false;
+                svg.style.cursor = "grab";
+            }
+
+            svg.addEventListener("pointerdown", function (event) {
+                if (event.target && event.target.closest && event.target.closest(".node-group")) return;
+                closeNodePopup();
+                isPanning = true;
+                lastMouseX = event.clientX;
+                lastMouseY = event.clientY;
+                svg.style.cursor = "grabbing";
+                if (svg.setPointerCapture) svg.setPointerCapture(event.pointerId);
+            });
+
+            svg.addEventListener("pointermove", onPointerMove);
+            svg.addEventListener("pointerup", stopPointerInteraction);
+            svg.addEventListener("pointercancel", stopPointerInteraction);
+            svg.addEventListener("pointerleave", stopPointerInteraction);
+
+            svg.addEventListener("wheel", function (event) {
+                event.preventDefault();
+                closeNodePopup();
+                transform.k = Math.max(0.1, Math.min(5, transform.k - event.deltaY * 0.001));
+                render();
+            }, { passive: false });
+
+            window.addEventListener("resize", render);
+
+            function loadEmbeddedExample() {
+                try {
+                    setStatus("Example loading...");
+                    buildGraphFromData(
+                        EMBEDDED_REAL_DEBATE
+                    );
+                    rebuildGraphElements();
+                    render();
+                    startSimulation();
+                    clearStatus();
+                } catch (error) {
+                    const message = error && error.message ? error.message : String(error);
+                    setStatus("Error loading embedded example:\n" + message, true);
+                }
+            }
+
+            loadEmbeddedExample();
+        })();
+    </script>
+</body>
+
+</html>
