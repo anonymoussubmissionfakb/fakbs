@@ -82,7 +82,7 @@
         #helpPopupOverlay {
             position: fixed;
             inset: 0;
-            z-index: 1050;
+            z-index: 1200;
             display: none;
             background: rgba(15, 23, 42, 0.35);
         }
@@ -175,15 +175,21 @@
             font-weight: 700;
         }
 
-        #textButton {
+        #buttonContainer {
             position: fixed;
             top: 16px;
-            right: 16px;
+            left: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            z-index: 1100;
+        }
+
+        .side-btn {
             padding: 14px 18px;
             min-height: 50px;
             border: none;
             border-radius: 8px;
-            z-index: 900;
             background: #0f172a;
             color: #ffffff;
             font-size: 17px;
@@ -192,9 +198,12 @@
             box-shadow: 0 8px 24px rgba(15, 23, 42, 0.28);
             line-height: 1.2;
             white-space: nowrap;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
-        #textButton:hover {
+        .side-btn:hover {
             background: #1e293b;
         }
 
@@ -357,68 +366,32 @@
             background: #fef08a;
         }
 
-        #goBackButton {
-            position: fixed;
-            top: 16px;
-            left: 16px;
-            padding: 14px 16px;
-            min-height: 50px;
-            border: none;
-            border-radius: 8px;
-            z-index: 1100;
-            background: #0f172a;
-            color: #ffffff;
-            font-size: 17px;
-            font-weight: 600;
-            cursor: pointer;
-            box-shadow: 0 8px 24px rgba(15, 23, 42, 0.28);
-            line-height: 1.2;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        #goBackButton:hover {
-            background: #1e293b;
-        }
-
-        #helpMenuButton {
-            position: fixed;
-            top: 16px;
-            left: 76px;
-            padding: 14px 18px;
-            min-height: 50px;
-            border: none;
-            border-radius: 8px;
-            z-index: 1100;
-            background: #0f172a;
-            color: #ffffff;
-            font-size: 17px;
-            font-weight: 600;
-            cursor: pointer;
-            box-shadow: 0 8px 24px rgba(15, 23, 42, 0.28);
-            line-height: 1.2;
-            white-space: nowrap;
-        }
-
-        #helpMenuButton:hover {
-            background: #1e293b;
-        }
-        
     </style>
 </head>
 
 <body>
 
-    <button id="goBackButton" type="button" aria-label="Back to examples" title="Back">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-            stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle;">
-            <path d="M19 12H5M12 19l-7-7 7-7" />
-        </svg>
-    </button>
+    <div id="buttonContainer">
+        <button class="side-btn" id="goBackButton" type="button" aria-label="Back to examples" title="Back">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle;">
+                <path d="M19 12H5M12 19l-7-7 7-7" />
+            </svg>
+            Go Back
+        </button>
+        
+        <button class="side-btn" id="textButton" type="button" aria-label="Open segmented text" title="Open segmented text">
+            Show Tagged Debate
+        </button>
+        
+        <button class="side-btn" id="showArgTextButton" type="button" aria-label="Show argument text" title="Show argument text">
+            Show Argument Text
+        </button>
 
-    <button id="helpMenuButton" type="button" aria-label="Open info and querying help" title="Info &amp; Querying">Info
-        &amp; Querying</button>
+        <button class="side-btn" id="helpMenuButton" type="button" aria-label="Open info and querying help" title="Info &amp; Querying">
+            Info &amp; Querying
+        </button>
+    </div>
 
     <div id="helpPopupOverlay" aria-hidden="true">
         <div id="helpPopup" role="dialog" aria-modal="true" aria-labelledby="helpTitle">
@@ -492,8 +465,6 @@
             <p><code>?debaters=["Biden","Trump"]&amp;ac=5,8-10&amp;acceptance=0.45-0.80</code></p>
         </div>
     </div>
-
-    <button id="textButton" type="button" aria-label="Open segmented text" title="Open segmented text">Text</button>
 
     <div id="textSidebarOverlay" aria-hidden="true">
         <div id="textSidebar" role="dialog" aria-modal="true" aria-labelledby="textSidebarTitle">
@@ -1563,7 +1534,7 @@
             document.getElementById('nodePopup').classList.remove('visible');
         }
 
-        const SEGMENTED_TEXT = "MODERATOR: \"Good evening, and welcome to tonight's healthcare debate. Healthcare remains one of the most divisive issues in American politics, touching every family in the country. Representing the Republican Party is former President Donald Trump. At 74 years old and based in Florida, he argues that competition, deregulation, and greater consumer choice are the keys to lowering costs and improving care. Representing the Democratic Party is former Vice President Joe Biden. At 77 years old and from Delaware, he believes the federal government has a responsibility to expand coverage and protect Americans from losing access to healthcare. Joining them are six guests who will challenge and expand the discussion from different perspectives. Dr Emily Carter, she is a healthcare economist specializing in insurance markets and healthcare spending. Dr Michael Reed, he is a practicing hospital physician. Sarah Williams, she is a patient advocate representing families living with chronic illnesses. Senator Robert Hayes, he is a Republican policymaker supporting state-driven healthcare reform. Senator Linda Martinez, she is a Democratic senator advocating stronger public protections. And finally, James Thompson, he is a small business owner concerned about the impact of healthcare costs on employers. Let's begin.\"\nTRUMP: \"Thank you. We need to look at the reality of our healthcare system with clarity. Our administration has acted on a specific mechanism because the results speak for themselves. Quite simply, <AC0> removing the individual mandate lowers the burden on families while keeping protections in place </AC0> . This is not just a talking point; it is a central achievement of our healthcare record.\"\nBIDEN: \"I understand your claim, Donald, but <AC1> we cannot ignore the immediate reality facing millions of Americans </AC1> ; I express strong opposition to this approach because, fundamentally, <AC2> dismantling parts of the Affordable Care Act strips protections from people with pre-existing conditions </AC2> ; <AC3> at a time when families are already struggling, taking away that security motivates my rejection of your healthcare record </AC3> .\"\nTRUMP: \"That is a partisan exaggeration, Joe, but <AC4> the people deserve better than a broken system </AC4> . <AC5> We have clearly stated that cutting unnecessary mandates allows resources to be redirected toward lowering drug prices </AC5> . <AC6> This creates a path where deregulation funds the very affordability that families are asking for </AC6> .\"\nBIDEN: \"That is a convenient promise, Donald, but <AC7> my fellow citizens need coverage today, not vague assurances </AC7> . <AC8> We need to be very careful about dismantling protections now for a plan that has never actually been presented </AC8> .\"\nDR. EMILY CARTER: \"From an economic perspective, that's precisely where many economists disagree with you. <AC9> The individual mandate wasn't created to punish people\u2014it was designed to stabilize insurance markets </AC9> . <AC10> Removing it can reduce participation among healthier individuals, making insurance more expensive for everyone else </AC10> . <AC11> Lowering regulation doesn't automatically lower healthcare costs </AC11> .\"\nTRUMP: \"With all due respect, Doctor, <AC12> Americans don't need economists telling them they should be forced to buy something </AC12> . <AC13> Competition lowers prices </AC13> . <AC14> Government mandates don't </AC14> .\"\nDR. MICHAEL REED: \"From the perspective of doctors working directly with patients, <AC15> one of the biggest concerns is that many people delay treatment because they are worried about costs </AC15> . <AC16> Preventive care becomes more difficult when patients avoid hospitals until their conditions become serious </AC16> . <AC17> Any healthcare reform should encourage early access to medical services </AC17> .\"\nSARAH WILLIAMS: \"Patients are often caught in the middle of political debates. <AC18> Families with chronic illnesses are not thinking about ideology; they are thinking about whether they can afford medication or whether they can visit a specialist </AC18> . <AC19> Healthcare reform must consider the everyday experiences of ordinary Americans </AC19> .\"\nSENATOR ROBERT HAYES: \"Our party believes that <AC20> healthcare reform should respect individual choice and reduce dependence on federal programs </AC20> . <AC21> States should have more authority to design systems that reflect their own populations and priorities </AC21> .\"\nSENATOR LINDA MARTINEZ: \"Healthcare should be viewed as an investment in society. <AC22> When people have access to preventive care and affordable treatment, communities become healthier and stronger </AC22> . <AC23> Expanding coverage is not only a moral responsibility but also an economic strategy </AC23> .\"\nJAMES THOMPSON: \"Small businesses are also affected by healthcare policies. <AC24> Employers want to provide good benefits, but rising insurance costs make it increasingly difficult </AC24> . <AC25> Any reform should consider the impact on companies that create jobs </AC25> .\"\nMODERATOR: \"Tonight's discussion has shown the complexity of healthcare reform. The debate is not only about costs, but also about access, responsibility, innovation, and security. The additional perspectives from healthcare professionals, economists, policymakers, advocates, and business owners demonstrate that the future of healthcare remains one of the most important issues facing the country.\""; // Sostituisci con il vero testo del dibattito
+        const SEGMENTED_TEXT = "MODERATOR: \"Good evening, and welcome to tonight's healthcare debate. Healthcare remains one of the most divisive issues in American politics, touching every family in the country. Representing the Republican Party is former President Donald Trump. At 74 years old and based in Florida, he argues that competition, deregulation, and greater consumer choice are the keys to lowering costs and improving care. Representing the Democratic Party is former Vice President Joe Biden. At 77 years old and from Delaware, he believes the federal government has a responsibility to expand coverage and protect Americans from losing access to healthcare. Joining them are six guests who will challenge and expand the discussion from different perspectives. Dr Emily Carter, she is a healthcare economist specializing in insurance markets and healthcare spending. Dr Michael Reed, he is a practicing hospital physician. Sarah Williams, she is a patient advocate representing families living with chronic illnesses. Senator Robert Hayes, he is a Republican policymaker supporting state-driven healthcare reform. Senator Linda Martinez, she is a Democratic senator advocating stronger public protections. And finally, James Thompson, he is a small business owner concerned about the impact of healthcare costs on employers. Let's begin.\"\nTRUMP: \"Thank you. We need to look at the reality of our healthcare system with clarity. Our administration has acted on a specific mechanism because the results speak for themselves. Quite simply, <AC0> removing the individual mandate lowers the burden on families while keeping protections in place </AC0> . This is not just a talking point; it is a central achievement of our healthcare record.\"\nBIDEN: \"I understand your claim, Donald, but <AC1> we cannot ignore the immediate reality facing millions of Americans </AC1> ; I express strong opposition to this approach because, fundamentally, <AC2> dismantling parts of the Affordable Care Act strips protections from people with pre-existing conditions </AC2> ; <AC3> at a time when families are already struggling, taking away that security motivates my rejection of your healthcare record </AC3> .\"\nTRUMP: \"That is a partisan exaggeration, Joe, but <AC4> the people deserve better than a broken system </AC4> . <AC5> We have clearly stated that cutting unnecessary mandates allows resources to be redirected toward lowering drug prices </AC5> . <AC6> This creates a path where deregulation funds the very affordability that families are asking for </AC6> .\"\nBIDEN: \"That is a convenient promise, Donald, but <AC7> my fellow citizens need coverage today, not vague assurances </AC7> . <AC8> We need to be very careful about dismantling protections now for a plan that has never actually been presented </AC8> .\"\nDR. EMILY CARTER: \"From an economic perspective, that's precisely where many economists disagree with you. <AC9> The individual mandate wasn't created to punish people\u2014it was designed to stabilize insurance markets </AC9> . <AC10> Removing it can reduce participation among healthier individuals, making insurance more expensive for everyone else </AC10> . <AC11> Lowering regulation doesn't automatically lower healthcare costs </AC11> .\"\nTRUMP: \"With all due respect, Doctor, <AC12> Americans don't need economists telling them they should be forced to buy something </AC12> . <AC13> Competition lowers prices </AC13> . <AC14> Government mandates don't </AC14> .\"\nDR. MICHAEL REED: \"From the perspective of doctors working directly with patients, <AC15> one of the biggest concerns is that many people delay treatment because they are worried about costs </AC15> . <AC16> Preventive care becomes more difficult when patients avoid hospitals until their conditions become serious </AC16> . <AC17> Any healthcare reform should encourage early access to medical services </AC17> .\"\nSARAH WILLIAMS: \"Patients are often caught in the middle of political debates. <AC18> Families with chronic illnesses are not thinking about ideology; they are thinking about whether they can afford medication or whether they can visit a specialist </AC18> . <AC19> Healthcare reform must consider the everyday experiences of ordinary Americans </AC19> .\"\nSENATOR ROBERT HAYES: \"Our party believes that <AC20> healthcare reform should respect individual choice and reduce dependence on federal programs </AC20> . <AC21> States should have more authority to design systems that reflect their own populations and priorities </AC21> .\"\nSENATOR LINDA MARTINEZ: \"Healthcare should be viewed as an investment in society. <AC22> When people have access to preventive care and affordable treatment, communities become healthier and stronger </AC22> . <AC23> Expanding coverage is not only a moral responsibility but also an economic strategy </AC23> .\"\nJAMES THOMPSON: \"Small businesses are also affected by healthcare policies. <AC24> Employers want to provide good benefits, but rising insurance costs make it increasingly difficult </AC24> . <AC25> Any reform should consider the impact on companies that create jobs </AC25> .\"\nMODERATOR: \"Tonight's discussion has shown the complexity of healthcare reform. The debate is not only about costs, but also about access, responsibility, innovation, and security. The additional perspectives from healthcare professionals, economists, policymakers, advocates, and business owners demonstrate that the future of healthcare remains one of the most important issues facing the country.\"";
 
         function escapeHtml(str) {
             return str
@@ -1739,13 +1710,37 @@
             if (goBackButton) {
                 goBackButton.addEventListener("click", function () {
                     window.location.href = "index.html";
-
                 });
             }
 
             const textButton = document.getElementById("textButton");
             if (textButton) {
                 textButton.addEventListener("click", openTextSidebar);
+            }
+
+            const showArgTextButton = document.getElementById("showArgTextButton");
+            if (showArgTextButton) {
+                const urlParams = new URLSearchParams(window.location.search);
+                const currentVal = urlParams.get("showTextOf");
+                const isTextShown = currentVal === "1" || currentVal === "true";
+
+                if (isTextShown) {
+                    showArgTextButton.textContent = "Hide Argument Text";
+                    showArgTextButton.title = "Hide Argument Text";
+                } else {
+                    showArgTextButton.textContent = "Show Argument Text";
+                    showArgTextButton.title = "Show Argument Text";
+                }
+
+                showArgTextButton.addEventListener("click", function () {
+                    const url = new URL(window.location.href);
+                    if (isTextShown) {
+                        url.searchParams.set("showTextOf", "0");
+                    } else {
+                        url.searchParams.set("showTextOf", "1");
+                    }
+                    window.location.href = url.toString();
+                });
             }
 
             const textSidebarCloseBtn = document.getElementById("textSidebarCloseBtn");
