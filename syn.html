@@ -26,7 +26,7 @@
 
         #status {
             position: fixed;
-            top: 196px;
+            top: 76px;
             left: 16px;
             z-index: 5;
             max-width: min(640px, calc(100vw - 32px));
@@ -79,15 +79,117 @@
             color: #1e293b;
         }
 
-        #textButton {
+        #helpPopupOverlay {
+            position: fixed;
+            inset: 0;
+            z-index: 1200;
+            display: none;
+            background: rgba(15, 23, 42, 0.35);
+        }
+
+        #helpPopupOverlay.visible {
+            display: block;
+        }
+
+        #helpPopup {
+            position: absolute;
+            top: 72px;
+            left: 16px;
+            width: min(760px, calc(100vw - 32px));
+            max-height: calc(100vh - 88px);
+            overflow: auto;
+            background: rgba(255, 255, 255, 0.99);
+            border: 1px solid #cbd5e1;
+            border-radius: 12px;
+            padding: 18px 18px 16px 18px;
+            color: #1e293b;
+            box-shadow: 0 16px 40px rgba(15, 23, 42, 0.22);
+            font-size: 14px;
+            line-height: 1.45;
+        }
+
+        #helpPopup .popup-close {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            width: 24px;
+            height: 24px;
+            background: none;
+            border: none;
+            font-size: 20px;
+            cursor: pointer;
+            color: #64748b;
+        }
+
+        #helpPopup .popup-close:hover {
+            color: #1e293b;
+        }
+
+        #helpPopup h2 {
+            margin: 0 28px 8px 0;
+            font-size: 18px;
+            line-height: 1.2;
+        }
+
+        #helpPopup h3 {
+            margin: 14px 0 6px 0;
+            font-size: 14px;
+        }
+
+        #helpPopup p {
+            margin: 0 0 8px 0;
+        }
+
+        #helpPopup ul {
+            margin: 0 0 8px 18px;
+            padding: 0;
+        }
+
+        #helpPopup code {
+            background: #f1f5f9;
+            border: 1px solid #e2e8f0;
+            border-radius: 4px;
+            padding: 1px 4px;
+            font-family: Menlo, Consolas, monospace;
+            font-size: 12px;
+            color: #0f172a;
+        }
+
+        #helpPopup table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 4px 0 8px 0;
+            font-size: 13px;
+        }
+
+        #helpPopup th,
+        #helpPopup td {
+            border: 1px solid #e2e8f0;
+            padding: 6px 8px;
+            text-align: left;
+            vertical-align: top;
+        }
+
+        #helpPopup th {
+            background: #f8fafc;
+            font-weight: 700;
+        }
+
+        #buttonContainer {
             position: fixed;
             top: 16px;
-            right: 16px;
+            left: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            z-index: 1100;
+        }
+
+        .side-btn {
             padding: 14px 18px;
             min-height: 50px;
             border: none;
             border-radius: 8px;
-            z-index: 900;
             background: #0f172a;
             color: #ffffff;
             font-size: 17px;
@@ -96,9 +198,12 @@
             box-shadow: 0 8px 24px rgba(15, 23, 42, 0.28);
             line-height: 1.2;
             white-space: nowrap;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
-        #textButton:hover {
+        .side-btn:hover {
             background: #1e293b;
         }
 
@@ -261,166 +366,34 @@
             background: #fef08a;
         }
 
-        #helpPopupOverlay {
-            position: fixed;
-            inset: 0;
-            z-index: 1050;
-            display: none;
-            background: rgba(15, 23, 42, 0.35);
-        }
-
-        #helpPopupOverlay.visible {
-            display: block;
-        }
-
-        #helpPopup {
-            position: absolute;
-            top: 72px;
-            left: 16px;
-            width: min(760px, calc(100vw - 32px));
-            max-height: calc(100vh - 88px);
-            overflow: auto;
-            background: rgba(255, 255, 255, 0.99);
-            border: 1px solid #cbd5e1;
-            border-radius: 12px;
-            padding: 18px 18px 16px 18px;
-            color: #1e293b;
-            box-shadow: 0 16px 40px rgba(15, 23, 42, 0.22);
-            font-size: 14px;
-            line-height: 1.45;
-        }
-
-        #helpPopup .popup-close {
-            position: absolute;
-            top: 8px;
-            right: 8px;
-            width: 24px;
-            height: 24px;
-            background: none;
-            border: none;
-            font-size: 20px;
-            cursor: pointer;
-            color: #64748b;
-        }
-
-        #helpPopup .popup-close:hover {
-            color: #1e293b;
-        }
-
-        #helpPopup h2 {
-            margin: 0 28px 8px 0;
-            font-size: 18px;
-            line-height: 1.2;
-        }
-
-        #helpPopup h3 {
-            margin: 14px 0 6px 0;
-            font-size: 14px;
-        }
-
-        #helpPopup p {
-            margin: 0 0 8px 0;
-        }
-
-        #helpPopup ul {
-            margin: 0 0 8px 18px;
-            padding: 0;
-        }
-
-        #helpPopup code {
-            background: #f1f5f9;
-            border: 1px solid #e2e8f0;
-            border-radius: 4px;
-            padding: 1px 4px;
-            font-family: Menlo, Consolas, monospace;
-            font-size: 12px;
-            color: #0f172a;
-        }
-
-        #helpPopup table {
-            width: 100%;
-            border-collapse: collapse;
-            margin: 4px 0 8px 0;
-            font-size: 13px;
-        }
-
-        #helpPopup th,
-        #helpPopup td {
-            border: 1px solid #e2e8f0;
-            padding: 6px 8px;
-            text-align: left;
-            vertical-align: top;
-        }
-
-        #helpPopup th {
-            background: #f8fafc;
-            font-weight: 700;
-        }
-
-        #goBackButton {
-            position: fixed;
-            top: 16px;
-            left: 16px;
-            padding: 14px 16px;
-            min-height: 50px;
-            border: none;
-            border-radius: 8px;
-            z-index: 1100;
-            background: #0f172a;
-            color: #ffffff;
-            font-size: 17px;
-            font-weight: 600;
-            cursor: pointer;
-            box-shadow: 0 8px 24px rgba(15, 23, 42, 0.28);
-            line-height: 1.2;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        #goBackButton:hover {
-            background: #1e293b;
-        }
-
-        #helpMenuButton {
-            position: fixed;
-            top: 16px;
-            left: 76px;
-            padding: 14px 18px;
-            min-height: 50px;
-            border: none;
-            border-radius: 8px;
-            z-index: 1100;
-            background: #0f172a;
-            color: #ffffff;
-            font-size: 17px;
-            font-weight: 600;
-            cursor: pointer;
-            box-shadow: 0 8px 24px rgba(15, 23, 42, 0.28);
-            line-height: 1.2;
-            white-space: nowrap;
-        }
-
-        #helpMenuButton:hover {
-            background: #1e293b;
-        }
     </style>
 </head>
 
 <body>
+    <div id="buttonContainer">
+        <button class="side-btn" id="goBackButton" type="button" aria-label="Back to examples" title="Back">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle;">
+                <path d="M19 12H5M12 19l-7-7 7-7" />
+            </svg>
+            Go Back
+        </button>
 
-    <button id="goBackButton" type="button" aria-label="Back to examples" title="Back">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-            stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle;">
-            <path d="M19 12H5M12 19l-7-7 7-7" />
-        </svg>
-    </button>
+        <button class="side-btn" id="textButton" type="button" aria-label="Open segmented text"
+            title="Open segmented text">
+            Show Tagged Debate
+        </button>
 
-    <button id="helpMenuButton" type="button" aria-label="Open info and querying help" title="Info &amp; Querying">Info
-        &amp; Querying</button>
+        <button class="side-btn" id="showArgTextButton" type="button" aria-label="Show argument text"
+            title="Show argument text">
+            Show Argument Text
+        </button>
 
-    <button id="textButton" type="button" aria-label="Open segmented text" title="Open segmented text">Text</button>
-
+        <button class="side-btn" id="helpMenuButton" type="button" aria-label="Open info and querying help"
+            title="Info &amp; Querying">
+            Info &amp; Querying
+        </button>
+    </div>
 
     <div id="textSidebarOverlay" aria-hidden="true">
         <div id="textSidebar" role="dialog" aria-modal="true" aria-labelledby="textSidebarTitle">
@@ -949,6 +922,32 @@
                     if (event.target === textSidebarOverlay) closeTextSidebar();
                 });
             }
+
+            const showArgTextButton = document.getElementById("showArgTextButton");
+            if (showArgTextButton) {
+                const urlParams = new URLSearchParams(window.location.search);
+                const currentVal = urlParams.get("showTextOf");
+                const isTextShown = currentVal === "1" || currentVal === "true";
+
+                if (isTextShown) {
+                    showArgTextButton.textContent = "Hide Argument Text";
+                    showArgTextButton.title = "Hide Argument Text";
+                } else {
+                    showArgTextButton.textContent = "Show Argument Text";
+                    showArgTextButton.title = "Show Argument Text";
+                }
+
+                showArgTextButton.addEventListener("click", function () {
+                    const url = new URL(window.location.href);
+                    if (isTextShown) {
+                        url.searchParams.set("showTextOf", "0");
+                    } else {
+                        url.searchParams.set("showTextOf", "1");
+                    }
+                    window.location.href = url.toString();
+                });
+            }
+            
         })();
 
         function openHelpPopup() {
